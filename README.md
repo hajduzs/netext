@@ -14,4 +14,20 @@ SIG compalition:
 
 
 
+CGAL:
 
+>(install cmake also)
+
+1. download and install cgal https://doc.cgal.org/latest/Manual/installation.html
+
+2. create a temp directory: tmp/
+
+3. copy the extracted json.hpp and dangerzone.cpp to tmp/
+
+4. cgal_create_CMakeLists -s dangerzone.cpp
+
+5. cmake .
+
+6. make
+
+7. use dangerzone as wanted
