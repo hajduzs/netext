@@ -6,6 +6,8 @@ SIG compalition:
 
 >sig applications only compile if they are placed in the same folder as the whole toolkit is. thats why if for example sig is under path/sig/, you'll nedd a folder at path/app/ to compile everything.
 
+> install libglfw3-dev
+
 2. navigate to sig/make/ and 
   2.1 extend the COPT variable with the -fPIC flag (important for the library)
   2.2 build the needed libs with 'make libs'
@@ -18,7 +20,7 @@ SIG compalition:
 
 CGAL:
 
->(please also install cmake)
+>install cmake
 
 1. download and install cgal https://doc.cgal.org/latest/Manual/installation.html
 
