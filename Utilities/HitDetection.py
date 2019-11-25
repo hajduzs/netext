@@ -46,6 +46,7 @@ def get_links_killed(p, r, graph):
             damaged.append(edge)
     return damaged
 
+
 def hit_graph_with_disaster(topology, r, p):
     G = topology.copy()
 
@@ -73,8 +74,11 @@ Ok, I feel like this needs an explanation.
 def is_face_valid_dangerzone(gamma, poly, r, graph):
     valid = False
     if not nx.is_connected(graph):
+        # remove later
+        return True
         if nx.number_connected_components(graph) == 2:
-            cl = [c for c in nx.connected_component_subgraphs(graph) if len(c) == 1]
+            xd = nx.connected_components(graph)
+            cl = [c for c in nx.connected_components(graph) if len(c) == 1]
             if len(cl) != 0:
                 c = cl[0]
                 valid = False

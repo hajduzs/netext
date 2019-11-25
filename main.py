@@ -74,24 +74,24 @@ for g in graphlist:
         DZL = DangerZoneList()
 
         for face in get_division_from_json(R, jsname, "{}/faces.txt".format(g_r_path)):
-            try:
-                poly = geom.Polygon(func.destringify_points(face))
+            #try:
+            poly = geom.Polygon(func.destringify_points(face))
 
-                if not poly.is_valid:
-                    poly = poly.buffer(0)
+            if not poly.is_valid:
+                poly = poly.buffer(0)
 
-                p = poly.representative_point()
+            p = poly.representative_point()
 
-                G = hit_graph_with_disaster(TOPOLOGY, R, (p.x, p.y))
+            G = hit_graph_with_disaster(TOPOLOGY, R, (p.x, p.y))
 
-                if is_face_valid_dangerzone(GAMMA, poly, R, G):
-                    dz = DangerZone(G, poly, face)
-                    DZL.add_danger_zone(dz)
+            if is_face_valid_dangerzone(GAMMA, poly, R, G):
+                dz = DangerZone(G, poly, face)
+                DZL.add_danger_zone(dz)
 
-            except Exception as e:
-                log("### EXCEPTION ####\n", "DZ_CONSTRUCTION")
-                log(repr(e), "DZ_CONSTRUCTION")
-                log("\nface:\n{}\n".format(face), "DZ_CONSTRUCTION")
+            #except Exception as e:
+                #log("### EXCEPTION ####\n", "DZ_CONSTRUCTION")
+                #log(repr(e), "DZ_CONSTRUCTION")
+                #log("\nface:\n{}\n".format(face), "DZ_CONSTRUCTION")
 
         log(DZL, "DZ_CONSTRUCTION")
 
@@ -112,7 +112,7 @@ for g in graphlist:
 
         # load danger zones into the path planner
         for dz in DZL:
-            PP.addDangerZone(dz.strpoly)
+            PP.addDangerZone(dz.string_poly)
 
         # TODO:
         # LP problem
