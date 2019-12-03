@@ -140,11 +140,13 @@ for g in graphlist:
                 ids.update(BPD.return_ids_for_cut(c))
             ids = list(ids)
 
-            for i in range(1, len(ids)):
-                i_subsets = itertools.combinations(ids, i)
-                for subs in i_subsets:
-                    PP.calculate_r_detour(pi, pg, ids)
-                    MODEL += mip.xsum([ X[k] for k in ids ]) <= PP.getCost()
+            i_subsets = itertools.chain.from_iterable(itertools.combinations(ids, r) for r in range(1, len(ids)+1))
+            for subs in i_subsets:
+                print(subs)
+                PP.calculate_r_detour(pi, pg, subs)
+                MODEL += mip.xsum([ X[k] for k in subs ]) <= PP.getCost()
+
+
 
         for i in range(0, len(DZL)):
             MODEL += X[i] != 0
@@ -157,6 +159,11 @@ for g in graphlist:
         print('solution:')
         for v in MODEL.vars:
             print('{} : {}'.format(v.name, v.x))
+
+        for c in MODEL.constrs:
+            if c.slack == 0:
+                print(c)
+
 
         # HEUR STEP 1: CALCULATE DETOUR COST FOR EVERY EDGE VERTEX SO
         # EVERY DANGER ZONE ADJACENT IS AVOIDED.
@@ -253,11 +260,11 @@ for g in graphlist:
                 d["t_cost"] = cost
                 d["t_ids"] = set(ids)
 
-                '''
+
                 print("{} {}".format(n, (d["cost"], d["ids"])))
                 print("{} {}".format(n,(d["t_cost"], d["t_ids"])))
                 print("diff: {}".format(d["cost"] - d["t_cost"]))
-                '''
+
 
             min_n = 0
             min_d = 0
