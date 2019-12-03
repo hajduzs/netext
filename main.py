@@ -253,38 +253,57 @@ for g in graphlist:
                 d["t_cost"] = cost
                 d["t_ids"] = set(ids)
 
-            t_sum = sum([x["t_cost"] for n, x in corr])
+                '''
+                print("{} {}".format(n, (d["cost"], d["ids"])))
+                print("{} {}".format(n,(d["t_cost"], d["t_ids"])))
+                print("diff: {}".format(d["cost"] - d["t_cost"]))
+                '''
+
             min_n = 0
             min_d = 0
             # select minimal cost edge
             mincost = float("inf")
             for n, d in corr:
-                if mincost > t_sum - d["t_cost"] + d["cost"]:
-                    mincost = t_sum - d["t_cost"] + d["cost"]
+                if mincost > d["cost"] - d["t_cost"]:
+                    mincost = d["cost"] - d["t_cost"]
                     min_n = n
                     min_d = d
 
             # set that in the graph
-            BPD.graph.nodes[min_n]["cost"] = min_d["t_cost"]
-            BPD.graph.nodes[min_n]["path"] = min_d["t_path"]
-            BPD.graph.nodes[min_n]["ids"] = min_d["t_ids"]
+            for n, d in corr:
+                if n == min_n:
+                    continue
+                BPD.graph.nodes[n]["cost"] = d["t_cost"]
+                BPD.graph.nodes[n]["path"] = d["t_path"]
+                BPD.graph.nodes[n]["ids"] = d["t_ids"]
 
-
+            # delete other edges
+            for n, d in corr:
+                if n == min_n:
+                    continue
+                for v in [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v) and Z in BPD.return_ids_for_cut(v)]:
+                    BPD.graph.remove_edge(n, v)
 
         # comparing the solution with the model
 
+        evs_to_remove = set([n for n, d in BPD.graph.nodes(data=True) if d["bipartite"] == 0]) - set([n for n, d in nodes])
+        BPD.graph.remove_nodes_from(evs_to_remove)
+
+        acsum = 0
         for n, d in BPD.graph.nodes(data=True):
             if d["bipartite"] == 1:
                 continue
+            acsum += d["cost"]
             cuts = [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v)]
             protected_ids = set()
             for c in cuts:
                 protected_ids.update(BPD.return_ids_for_cut(c))
             lowerbound = sum([MODEL.vars[id].x for id in protected_ids])
-            print("ids found: {}".format(protected_ids))
-            print("compare done for edge {}. LB: {} AC: {} .. diff: {}".format(n, lowerbound, d["cost"], d["cost"] - lowerbound))
+            print("ids: {}".format(protected_ids))
+            print("compare done for edge {}. LB: {} AC: {} .. diff: {} (+{}%)".format(n, lowerbound, d["cost"], d["cost"] - lowerbound, 100*(d["cost"] - lowerbound)/lowerbound))
 
-
+        lbsum = sum([MODEL.vars[i].x for i in range(0, len(DZL))])
+        print("In total: LB: {}, AC: {} .. diff: {} (+{}%)".format(lbsum, acsum, acsum-lbsum, 100*(acsum-lbsum)/lbsum))
         # 4. AFTERWORK: only the selected edges (nodes) need to be in the graph.
 
         evs_to_remove = set(BPD.graph.nodes) - set([n for n, d in nodes])
