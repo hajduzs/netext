@@ -5,6 +5,7 @@ from Utilities.Logging import log, set_out
 from NetworkModels.DangerZones import DangerZoneList, DangerZone, reset_counter
 from Utilities.HitDetection import is_face_valid_dangerzone, hit_graph_with_disaster
 from NetworkModels.BipartiteGraph import BipartiteDisasterGraph
+from NetworkModels.ConstarintGraph import ConstraintGraph
 from Wrappers.PathPlanner import PathPlanner
 from Utilities.Plotting2 import plot_graph_all_2, plot_graph_with_node_labels
 
@@ -154,7 +155,9 @@ for g in graphlist:
         for v in MODEL.vars:
             print('{} : {}'.format(v.name, v.x))
 
+        CG = ConstraintGraph(MODEL.constrs)
 
+        CG.print_data()
 
 
         
