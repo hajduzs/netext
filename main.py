@@ -7,7 +7,7 @@ from Utilities.HitDetection import is_face_valid_dangerzone, hit_graph_with_disa
 from NetworkModels.BipartiteGraph import BipartiteDisasterGraph
 from NetworkModels.ConstarintGraph import ConstraintGraph
 from Wrappers.PathPlanner import PathPlanner
-from Utilities.Plotting2 import plot_graph_all_2, plot_graph_with_node_labels
+from Utilities.Plotting2 import plot_graph_all_3, plot_graph_with_node_labels
 
 import Utilities.Geometry2D as CustomGeom
 from Wrappers.PlanarDivider import get_division_from_json
@@ -125,6 +125,9 @@ for g in graphlist:
 
         # constraintek feltöltése
 
+        CL = {}
+        c_index = 0
+
         for n, d in BPD.graph.nodes(data=True):
             if d["bipartite"] == 1: continue
 
@@ -145,6 +148,8 @@ for g in graphlist:
             for subs in i_subsets:
                 PP.calculate_r_detour(pi, pg, subs)
                 MODEL += mip.xsum([X[k] for k in subs]) <= PP.getCost()
+                CL[c_index] = (pnodes, PP.getPath())
+                c_index += 1
 
         MODEL.objective = mip.maximize(mip.xsum(X))
 
@@ -159,6 +164,20 @@ for g in graphlist:
 
         CG.print_data()
 
+        chosen_edges = CG.optimize(CL)
 
-        
+        print(chosen_edges)
 
+        acsum = 0
+        for edge, path, cost, zones in chosen_edges:
+            acsum += cost
+            lowerbound = sum([MODEL.vars[id].x for id in zones])
+            print("ids: {}".format([z for z in zones]))
+            print("compare done for edge {}. LB: {} AC: {} .. diff: {} (+{}%)".format(edge, lowerbound, cost,
+                                                                                      cost - lowerbound, 100 * (cost - lowerbound) / lowerbound))
+
+        lbsum = sum([MODEL.vars[i].x for i in range(0, len(DZL))])
+        print("In total: LB: {}, AC: {} .. diff: {} (+{}%)".format(lbsum, acsum, acsum - lbsum,
+                                                                   100 * (acsum - lbsum) / lbsum))
+
+        plot_graph_all_3(g_r_path, TOPOLOGY, DZL, chosen_edges, bb, R)
