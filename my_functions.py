@@ -22,7 +22,7 @@ def load_graph_form_json(path):
         return G
 
 
-def generate_json_from_lgf(path):
+def generate_json_from_lgf(path, scale=1):
     file = open(path, 'r')
     all_line = file.read().split('\n')
     all_match = [re.findall(r'^(\d+)\t\((.+),(.+)\)|^(\d+)\t(\d+)\t(\d+)', line) for line in all_line]
@@ -32,7 +32,7 @@ def generate_json_from_lgf(path):
     for line in all_match:
         line = line[0]
         if line[3] == '':
-            c = "[" + line[1] + ", " + line[2] + "]"
+            c = "[" + str(float(line[1])*scale) + ", " + str(float(line[2])*scale) + "]"
             nodedata = "{ \"id\": \"" + line[0] + "\", \"coords\": " + c + " }"
             nodes.append(nodedata)
         else:

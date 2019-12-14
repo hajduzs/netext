@@ -18,10 +18,11 @@ import shapely.geometry as geom
 import networkx as nx
 import mip
 import itertools
+import matplotlib.pyplot as plt
 
 # GLOBAL VARIABLES
 
-GAMMA = 1.07
+GAMMA = 1
 
 # paths
 
@@ -46,7 +47,11 @@ for g in graphlist:
 
     # GENERATE JSON FROM LGF
 
-    js = func.generate_json_from_lgf("graphs/"+g)
+    scale = 1
+    if g == 'Germany50.lgf':
+        scale = 10
+
+    js = func.generate_json_from_lgf("graphs/"+g, scale)
     jsname = gpath + "/" + g.split(".")[0] + ".json"
     with open(jsname, "w") as f:
         f.write(js)
@@ -78,10 +83,19 @@ for g in graphlist:
             #try:
             poly = geom.Polygon(func.destringify_points(face))
 
+            if poly.is_empty:   # ignore really small and degenetate polygons
+                continue
+
             if not poly.is_valid:
                 poly = poly.buffer(0)
+                if poly.is_empty:
+                    continue
 
             p = poly.representative_point()
+
+
+            plt.plot(*poly.exterior.xy)
+            plt.show()
 
             G = hit_graph_with_disaster(TOPOLOGY, R, (p.x, p.y))
 
