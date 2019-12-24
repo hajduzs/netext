@@ -2,23 +2,21 @@ from datetime import datetime
 
 import my_functions as func
 from Utilities.Logging import log, set_out
-from NetworkModels.DangerZones import DangerZoneList, DangerZone, reset_counter
+from NetworkModels.DangerZones import DangerZoneList, DangerZone
 from Utilities.HitDetection import is_face_valid_dangerzone, hit_graph_with_disaster
 from NetworkModels.BipartiteGraph import BipartiteDisasterGraph
 from NetworkModels.ConstarintGraph import ConstraintGraph
 from Wrappers.PathPlanner import PathPlanner
 from Utilities.Plotting2 import plot_graph_all_3, plot_graph_with_node_labels
+from Utilities.Outputter import *
 
-import Utilities.Geometry2D as CustomGeom
 from Wrappers.PlanarDivider import get_division_from_json
 
-import json
 import os
 import shapely.geometry as geom
-import networkx as nx
 import mip
 import itertools
-import matplotlib.pyplot as plt
+import sys
 
 # GLOBAL VARIABLES
 
@@ -26,23 +24,27 @@ GAMMA = 1
 
 # paths
 
+inputdir = None
+
+if len(sys.argv) > 1:
+    inputdir = sys.argv[1] + "/"
+else:
+    inputdir = "graphs/"
+
 graphlist = []
 
-for (dp, dn, filenames) in os.walk("graphs/"):
+for (dp, dn, filenames) in os.walk(inputdir):
     graphlist.extend(filenames)
     break
 
 if not os.path.exists("output"):
     os.mkdir("output")
 
-now = datetime.now().strftime('%Y%m%d-%H%M%S')
-os.mkdir("output/{}".format(now))
-
 for g in graphlist:
 
     # MAKE OUTPUT FOLDER
 
-    gpath = "output/{}/{}".format(now, g.split('.')[0])
+    gpath = "output/{}".format(g.split('.')[0])
     os.mkdir(gpath)      # We don't need to check if it already exists, because filenames are unique.
 
     # GENERATE JSON FROM LGF
@@ -51,7 +53,7 @@ for g in graphlist:
     if g == 'Germany50.lgf':
         scale = 10
 
-    js = func.generate_json_from_lgf("graphs/"+g, scale)
+    js = func.generate_json_from_lgf(inputdir +g, scale)
     jsname = gpath + "/" + g.split(".")[0] + ".json"
     with open(jsname, "w") as f:
         f.write(js)
@@ -80,7 +82,6 @@ for g in graphlist:
         DZL = DangerZoneList()
 
         for face in get_division_from_json(R, jsname, "{}/faces.txt".format(g_r_path)):
-            #try:
             poly = geom.Polygon(func.destringify_points(face))
 
             if poly.is_empty:   # ignore really small and degenetate polygons
@@ -93,20 +94,13 @@ for g in graphlist:
 
             p = poly.representative_point()
 
-
-            plt.plot(*poly.exterior.xy)
-            plt.show()
-
             G = hit_graph_with_disaster(TOPOLOGY, R, (p.x, p.y))
 
             if is_face_valid_dangerzone(GAMMA, poly, R, G):
                 dz = DangerZone(G, poly, face)
                 DZL.add_danger_zone(dz)
 
-            #except Exception as e:
-                #log("### EXCEPTION ####\n", "DZ_CONSTRUCTION")
-                #log(repr(e), "DZ_CONSTRUCTION")
-                #log("\nface:\n{}\n".format(face), "DZ_CONSTRUCTION")
+        write_dangerzones("{}/{}".format(g_r_path, "zones.txt"), DZL)
 
         log(DZL, "DZ_CONSTRUCTION")
 
@@ -132,12 +126,10 @@ for g in graphlist:
         # TODO:
         # LP problem
 
-        # Model 1 with every constraint
-
         MODEL = mip.Model()
         X = [MODEL.add_var(var_type=mip.CONTINUOUS) for i in range(0, len(DZL))]
 
-        # constraintek feltöltése
+        # constraintek feltoltese
 
         CL = {}
         c_index = 0
@@ -158,7 +150,7 @@ for g in graphlist:
                 ids.update(BPD.return_ids_for_cut(c))
             ids = list(ids)
 
-            i_subsets = itertools.chain.from_iterable(itertools.combinations(ids, r) for r in range(1, len(ids)+1))
+            i_subsets = itertools.chain.from_iterable(itertools.combinations(ids, r) for r in range(1, len(ids) + 1))
             for subs in i_subsets:
                 PP.calculate_r_detour(pi, pg, subs)
                 MODEL += mip.xsum([X[k] for k in subs]) <= PP.getCost()
@@ -180,7 +172,7 @@ for g in graphlist:
 
         chosen_edges = CG.optimize(CL)
 
-        print(chosen_edges)
+        write_paths("{}/{}".format(g_r_path, "paths.txt"), chosen_edges)
 
         acsum = 0
         for edge, path, cost, zones in chosen_edges:
@@ -188,7 +180,8 @@ for g in graphlist:
             lowerbound = sum([MODEL.vars[id].x for id in zones])
             print("ids: {}".format([z for z in zones]))
             print("compare done for edge {}. LB: {} AC: {} .. diff: {} (+{}%)".format(edge, lowerbound, cost,
-                                                                                      cost - lowerbound, 100 * (cost - lowerbound) / lowerbound))
+                                                                                      cost - lowerbound,
+                                                                                      100 * (cost - lowerbound) / lowerbound))
 
         lbsum = sum([MODEL.vars[i].x for i in range(0, len(DZL))])
         print("In total: LB: {}, AC: {} .. diff: {} (+{}%)".format(lbsum, acsum, acsum - lbsum,

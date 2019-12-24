@@ -76,7 +76,7 @@ def plot_graph_all(fp, graph, DZL, CL, BPD, bb, R, epsilon=0, nodesize=1, linew=
     plt.clf()
 
 
-def plot_graph_all_2(fp, graph, DZL, CL, BPD, bb, R, epsilon=0, nodesize=1, linew=0.5):
+def plot_graph_all_2(fp, graph, DZL, CL, BPD, bb, R, epsilon=0, nodesize=0.1, linew=0.5):
     figure, ax = plt.subplots()
     ax.set_xlim((bb["x_min"] - epsilon- R, bb["x_max"] + epsilon+R))
     ax.set_ylim((bb["y_min"] - epsilon-R, bb["y_max"] + epsilon+R))
