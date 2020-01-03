@@ -27,7 +27,7 @@ GAMMA = 1
 inputdir = None
 
 if len(sys.argv) > 1:
-    inputdir = sys.argv[1] + "/"
+    inputdir = "graphs/" + sys.argv[1] + "/"
 else:
     inputdir = "graphs/"
 
@@ -45,15 +45,24 @@ for g in graphlist:
     # MAKE OUTPUT FOLDER
 
     gpath = "output/{}".format(g.split('.')[0])
-    os.mkdir(gpath)      # We don't need to check if it already exists, because filenames are unique.
+    os.mkdir(gpath)
 
     # GENERATE JSON FROM LGF
 
-    scale = 1
-    if g == 'Germany50.lgf':
-        scale = 10
+    scale = 100 # just leave it there:
 
-    js = func.generate_json_from_lgf(inputdir +g, scale)
+    js = None
+
+    if g.split('.')[1] == "lgf":
+        js = func.generate_json_from_lgf(inputdir + g, scale)
+
+    if g.split('.')[1] == "gml":
+        js = func.generate_json_from_gml(inputdir + g, scale)
+
+    if js is None:
+        print("Not supported file format for {}. continuing as if nothing happened".format(g))
+        continue
+
     jsname = gpath + "/" + g.split(".")[0] + ".json"
     with open(jsname, "w") as f:
         f.write(js)
@@ -187,4 +196,4 @@ for g in graphlist:
         print("In total: LB: {}, AC: {} .. diff: {} (+{}%)".format(lbsum, acsum, acsum - lbsum,
                                                                    100 * (acsum - lbsum) / lbsum))
 
-        plot_graph_all_3(g_r_path, TOPOLOGY, DZL, chosen_edges, bb, R)
+        #plot_graph_all_3(g_r_path, TOPOLOGY, DZL, chosen_edges, bb, R)

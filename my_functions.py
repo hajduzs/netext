@@ -54,6 +54,47 @@ def generate_json_from_lgf(path, scale=1):
     return json_data
 
 
+def generate_json_from_gml(path, scale=1):
+
+    G = nx.read_gml(path, label='id')
+
+    node_data = G.nodes(data=True)
+    edge_data = G.edges(data=True)
+
+    nodes = []
+    edges = []
+    forbidden_nodes = []
+
+    for node in node_data:
+        if u'Longitude' not in [k for k, v in node[1].items()]:
+            forbidden_nodes.append(node[0])
+            continue
+        c = "[" + str(node[1][u'Longitude'] * scale) + ", " + str(node[1][u'Latitude'] * scale) + "]"
+        s = "{ \"id\": \"" + str(node[0]) + "\", \"coords\": " + c + " }"
+        nodes.append(s)
+
+    for edge in edge_data:
+        if edge[0] in forbidden_nodes or edge[1] in forbidden_nodes:
+            continue
+        s = "{ \"from\": \"" + str(edge[0]) + "\", \"to\": \"" + str(edge[1]) + "\" }"
+        edges.append(s)
+
+    json_data = "{ \"name\": \"" + path.split("/")[-1].split(".")[0] + "\", \"nodes\": ["
+
+    for node in nodes:
+        json_data += node + ","
+    json_data = json_data[:-1]
+
+    json_data += "], \"edges\": ["
+    for edge in edges:
+        json_data += edge + ","
+    json_data = json_data[:-1]
+
+    json_data += "] }"
+
+    return json_data
+
+
 def calculateBoundingBox(graph, r=0, epsilon=0):
     if type(graph) != type(nx.Graph()): raise TypeError("parameter 'graph' is not the expected type! (nx.Graph)")
 
