@@ -1,6 +1,8 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
+from Utilities.Logging import log
+
 
 class EdgeVertex:
     def __init__(self, edge):
@@ -53,6 +55,8 @@ class BipartiteDisasterGraph:
         self.Cuts = cut_list
         self.Edges = cut_list.return_all_protecting_edges()
         self.graph = self.load_graph()
+
+        log(self, "BIPARTITE_CONSTRUCTION")
 
     def return_nodes_for_edge(self, edge_name):
         for e in self.Edges:

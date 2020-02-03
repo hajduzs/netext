@@ -1,4 +1,5 @@
 from NetworkModels.BipartiteGraph import EdgeVertex
+from Utilities.Logging import log
 
 
 def reset_counter():
@@ -41,8 +42,12 @@ class DisasterCut:
 
 
 class CutList:
-    def __init__(self):
+    def __init__(self, DZL):
         self.cutList = []
+        for cut in DZL.generate_disaster_cuts():
+            self.add_disaster_cut(cut)
+
+        log(self, "CUT_CONSTRUCTION")
 
     def get_cut_count(self):
         return len(self.cutList)

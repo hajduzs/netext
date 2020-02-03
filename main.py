@@ -1,7 +1,8 @@
 import helper_functions as func
-from Utilities.Logging import log, set_out
+from Utilities.Logging import set_out
 import Utilities.Logging as logging
 from NetworkModels.DangerZones import DangerZoneList
+from NetworkModels.DisasterCuts import CutList
 from NetworkModels.BipartiteGraph import BipartiteDisasterGraph
 from Utilities.Plotting2 import plot_graph_all_3
 
@@ -18,9 +19,6 @@ GAMMA = 1
 FILES = {}
 
 # paths
-
-FILES['input_dir'] = None
-
 if len(sys.argv) > 1:
     FILES['input_dir'] = "graphs/" + sys.argv[1] + "/"
 else:
@@ -91,18 +89,8 @@ for g in graphlist:
 
         DZL = DangerZoneList(TOPOLOGY, R, GAMMA, get_division_from_json(R, FILES['js_name'], "{}/faces.txt".format(FILES['g_r_path_data'])))
         logging.write_dangerzones("{}/{}".format(FILES['g_r_path_data'], "zones.txt"), DZL)
-
-        log(DZL, "DZ_CONSTRUCTION")
-
-        # GENERATE CUTS FROM DANGER ZONES
-
-        CL = DZL.generate_disaster_cuts()
-        log(CL, "CUT_CONSTRUCTION")
-
-        # CONSTRUCT THE BIPARTITE DISASTER GRAPH
-
+        CL = CutList(DZL)
         BPD = BipartiteDisasterGraph(CL)
-        log(BPD, "BIPARTITE_CONSTRUCTION")
 
         # now we can choose the method
 

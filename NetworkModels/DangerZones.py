@@ -5,6 +5,8 @@ from Utilities.HitDetection import hit_graph_with_disaster, is_face_valid_danger
 import shapely.geometry as geom
 from helper_functions import destringify_points
 
+from Utilities.Logging import log
+
 
 def reset_counter():
     DangerZone.id = 0
@@ -55,6 +57,7 @@ class DangerZoneList:
         self.dangerZones = []
         self.load_dangerzones(topology, r, gamma, faces)
         reset_counter()
+        log(self, "DZ_CONSTRUCTION")
 
     def add_danger_zone(self, dz):
         self.dangerZones.append(dz)
@@ -98,10 +101,7 @@ class DangerZoneList:
         cuts = []
         for dz in self.dangerZones:
             cuts.extend(dz.get_disaster_cuts())
-        l = CutList()
-        for c in cuts:
-            l.add_disaster_cut(c)
-        return l
+        return cuts
 
 
 class DZLIterator:

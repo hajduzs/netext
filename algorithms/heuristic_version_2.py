@@ -1,4 +1,5 @@
 import helper_functions as func
+import algorithms.algoritmhs_helper_functions as a_func
 from libs.Wrappers.PathPlanner import PathPlanner
 
 
@@ -12,21 +13,10 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R):
         PP.addDangerZone(dz.string_poly)
 
     for n, d in BPD.graph.nodes(data=True):
-        if d["bipartite"] == 1:
+
+        ids = a_func.get_ids_to_avoid(n, d, BPD, TOPOLOGY)
+        if ids is None:
             continue
-
-        # get ccordinates
-        pnodes = d["vrtx"].edge
-        pi = func.get_coords_for_node(pnodes[0], TOPOLOGY)
-        pg = func.get_coords_for_node(pnodes[1], TOPOLOGY)
-
-        # get adjacent danger zones
-        neigh_cuts = [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v)]
-        d["neigh"] = len(neigh_cuts)
-        ids = set()
-        for c in neigh_cuts:
-            ids.update(BPD.return_ids_for_cut(c))
-        ids = list(ids)
 
         # calculate cost
         PP.calculate_r_detour(pi, pg, ids)
