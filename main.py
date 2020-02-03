@@ -94,10 +94,12 @@ for g in graphlist:
 
         # now we can choose the method
 
-        switch = False
+        false = False
 
-        if switch:
-            pass
+        if false:
+            from algorithms.heuristic_version_2 import heuristic_2
+            chosen_edges = heuristic_2(TOPOLOGY, DZL, BPD, R)
+            plot_graph_all_3(FILES['g_r_path'], TOPOLOGY, DZL, chosen_edges, bb, R)
 
         if True:
             from algorithms.LP_all_constraints import lp_all_constraints
