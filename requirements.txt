@@ -1,3 +1,6 @@
+tikzplotlib
+shapely
+mip
 matplotlib
 descartes
 networkx

@@ -56,7 +56,9 @@ def generate_json_from_lgf(path, scale=1):
 
 def generate_json_from_gml(path, scale=1):
 
+
     G = nx.read_gml(path, label='id')
+
 
     node_data = G.nodes(data=True)
     edge_data = G.edges(data=True)
@@ -97,16 +99,13 @@ def generate_json_from_gml(path, scale=1):
 
 def calculateBoundingBox(graph, r=0, epsilon=0):
     if type(graph) != type(nx.Graph()): raise TypeError("parameter 'graph' is not the expected type! (nx.Graph)")
+    points = [p[1]['coords'] for p in graph.nodes(data=True)]
 
-    all_points = [p[1]['coords'] for p in graph.nodes(data=True)]
-    return returnBoundingBox(all_points, r, epsilon)
+    Xmin = min(p[0] for p in points) - r - epsilon
+    Ymin = min(p[1] for p in points) - r - epsilon
+    Xmax = max(p[0] for p in points) + r + epsilon
+    YMax = max(p[1] for p in points) + r + epsilon
 
-
-def returnBoundingBox(points, R, epsilon):
-    Xmin = min(p[0] for p in points) - R - epsilon
-    Ymin = min(p[1] for p in points) - R - epsilon
-    Xmax = max(p[0] for p in points) + R + epsilon
-    YMax = max(p[1] for p in points) + R + epsilon
     return {
         "x_min": Xmin,
         "y_min": Ymin,
@@ -122,8 +121,7 @@ def get_coords_for_node(node, graph):
 def append_data_with_edge_chains(graph):
     if type(graph) != type(nx.Graph()): raise TypeError("parameter 'graph' is not the expected type! (nx.Graph)")
     for n1, n2, data in graph.edges(data=True):
-        new_points = []
-        new_points.append(get_coords_for_node(n2, graph))
+        new_points = [get_coords_for_node(n2, graph)]
         if 'points' in data:
             new_points.extend(data['points'])
         new_points.append(get_coords_for_node(n1, graph))
@@ -144,3 +142,5 @@ def stringify_points(points):
         ret += str(p[0]) + " " + str(p[1]) + "  "
     ret = ret.rstrip()
     return ret
+
+

@@ -164,8 +164,13 @@ def plot_graph_all_3(fp, graph, DZL, chosen, bb, R, epsilon=0, nodesize=1, linew
             line = plt.Line2D((p1[0], p2[0]), (p1[1], p2[1]), color=colors[cc], linewidth=linew * 1.5)
             ax.add_artist(line)
         cc += 1
-        if (cc == len(DZL.dangerZones)):
+        if cc == len(DZL.dangerZones):
             cc = 0
 
-    filepath = fp + "/" + graph.graph['name'] + ".jpg"
+    filepath = fp + "/" + graph.graph['name'] + ".tex"
+
+    import tikzplotlib
+    tikzplotlib.save(filepath)
+
+    filepath = fp + "/" + graph.graph['name'] + ".png"
     figure.savefig(filepath, dpi=300)

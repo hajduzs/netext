@@ -1,6 +1,10 @@
 import networkx as nx
 from NetworkModels.DisasterCuts import DisasterCut, CutList
 
+from Utilities.HitDetection import hit_graph_with_disaster, is_face_valid_dangerzone
+import shapely.geometry as geom
+from helper_functions import destringify_points
+
 
 def reset_counter():
     DangerZone.id = 0
@@ -47,8 +51,9 @@ class DangerZone:
 
 class DangerZoneList:
 
-    def __init__(self):
+    def __init__(self, topology, r, gamma, faces):
         self.dangerZones = []
+        self.load_dangerzones(topology, r, gamma, faces)
         reset_counter()
 
     def add_danger_zone(self, dz):
@@ -68,6 +73,26 @@ class DangerZoneList:
         for dz in self.dangerZones:
             s += dz.__str__()
         return s
+
+    def load_dangerzones(self, topology, r, gamma, faces):
+        for face in faces:
+            poly = geom.Polygon(destringify_points(face))
+
+            if poly.is_empty:  # ignore really small and degenetate polygons
+                continue
+
+            if not poly.is_valid:
+                poly = poly.buffer(0)
+                if poly.is_empty:
+                    continue
+
+            p = poly.representative_point()
+
+            G = hit_graph_with_disaster(topology, r, (p.x, p.y))
+
+            if is_face_valid_dangerzone(gamma, poly, r, G):
+                dz = DangerZone(G, poly, face)
+                self.add_danger_zone(dz)
 
     def generate_disaster_cuts(self):
         cuts = []
@@ -91,3 +116,4 @@ class DZLIterator:
             self._index += 1
             return ret
         raise StopIteration
+

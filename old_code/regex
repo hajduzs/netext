@@ -6,3 +6,6 @@ $1\t($3,$4)\n
 
 (\d*),{1}(\d*),{1}(\d*),{1}(\d*)
 $1.$2,$3.$4
+
+
+//used to convert some weird format to LGF in pycharm search & replace

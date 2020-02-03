@@ -28,6 +28,7 @@ graph [
   DateYear "2010"
   LastProcessed "2011_09_01"
   Testbed 0
+  multigraph 1
   node [
     id 0
     label "Bremen"
