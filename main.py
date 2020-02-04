@@ -1,17 +1,12 @@
 import helper_functions as func
-from Utilities.Logging import set_out
 import Utilities.Logging as logging
 from NetworkModels.DangerZones import DangerZoneList
 from NetworkModels.DisasterCuts import CutList
 from NetworkModels.BipartiteGraph import BipartiteDisasterGraph
 from Utilities.Plotting2 import plot_graph_all_3
-
-
 from libs.Wrappers.PlanarDivider import get_division_from_json
 import os
 import sys
-
-# TODO for later: add generator functions with 'yield' for optimisation
 
 # GLOBAL VARIABLES
 
@@ -24,84 +19,51 @@ if len(sys.argv) > 1:
 else:
     FILES['input_dir'] = "graphs/debug/"
 
-graphlist = []
-
-for (dp, dn, filenames) in os.walk(FILES['input_dir']):
-    graphlist.extend(filenames)
-    break
-
 if not os.path.exists("output"):
     os.mkdir("output")
 
-for g in graphlist:
+for g in func.load_graph_names(FILES):
 
-    # MAKE OUTPUT FOLDER
+    func.create_output_directory(FILES, g)
 
-    FILES['g_path'] = "output/{}".format(g.split('.')[0])     # gpath = output/test
-    if not os.path.exists(FILES['g_path']):
-        os.mkdir(FILES['g_path'])
-
-    # GENERATE JSON FROM LGF
+    # Generate (or read, if it already exists) JSON from input file
 
     scale = 1
-
-    js = None
-
-    if g.split('.')[1] == "lgf":
-        js = func.generate_json_from_lgf(FILES['input_dir'] + g, scale)
-
-    if g.split('.')[1] == "gml":
-        js = func.generate_json_from_gml(FILES['input_dir'] + g, scale)
-
-    if js is None:
-        print("Not supported file format for {}. continuing as if nothing happened".format(g))
+    if func.generate_or_read_json(FILES, scale, g) is None:
         continue
 
-    FILES['js_name'] = FILES['g_path'] + "/" + g.split(".")[0] + ".json"        # jsname = output/test/test.json
-    if not os.path.exists(FILES['js_name']):
-        with open(FILES['js_name'], "w") as f:
-            f.write(js)
-
-    # LOAD TOPOLOGY AND APPEND IT WITH DATA
+    # Load topology, append it with data, create bounding box
 
     TOPOLOGY = func.load_graph_form_json(FILES['js_name'])
-    bb = func.calculateBoundingBox(TOPOLOGY)
-
+    BOUNDING_BOX = func.calculateBoundingBox(TOPOLOGY)
     func.append_data_with_edge_chains(TOPOLOGY)
-    #plot_graph_with_node_labels(gpath + "/labels.jpg", TOPOLOGY)
 
-    # CALCULATE FEASIBLE R VALUES
+    R_values = [BOUNDING_BOX['small_side'] * scale / 100 for scale in range(5, 16)]
+    for R in R_values[3:5]:
 
-    small_side = min(bb["x_max"] - bb["x_min"], bb["y_max"] - bb["y_min"])
+        func.create_r_output_directory(FILES, R)
 
-    R_values = [small_side * scale / 100 for scale in range(5, 16)]
-
-    for R in R_values[3:4]:
-        FILES['g_r_path'] = FILES['g_path'] + "/r_{}".format(R)        # g_r_path = output/test/r_10
-        os.mkdir(FILES['g_r_path'])
-
-        FILES['g_r_path_data'] = FILES['g_r_path'] + "/data"
-        os.mkdir(FILES['g_r_path_data'])
-
-        set_out(FILES['g_r_path'] + "/log.txt")              # output/test/r_10/log.txt
-
-        # GENERATE DANGER ZONES
+        # generate danger zones, and then the bipartite disaster graph
 
         DZL = DangerZoneList(TOPOLOGY, R, GAMMA, get_division_from_json(R, FILES['js_name'], "{}/faces.txt".format(FILES['g_r_path_data'])))
         logging.write_dangerzones("{}/{}".format(FILES['g_r_path_data'], "zones.txt"), DZL)
-        CL = CutList(DZL)
-        BPD = BipartiteDisasterGraph(CL)
+        BPD = BipartiteDisasterGraph(CutList(DZL))
 
         # now we can choose the method
 
-        switch = False
+        chosen_edges = None
+        switch = 1
 
-        if switch:
-            pass
+        if switch == 0:             # Original heuristic (v2)
+            from algorithms.heuristic_version_2 import heuristic_2
+            chosen_edges = heuristic_2(TOPOLOGY, DZL, BPD, R)
 
-        if True:
-            from algorithms.LP_all_constraints import lp_all_constraints
-            chosen_edges = lp_all_constraints(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'])
-            plot_graph_all_3(FILES['g_r_path'], TOPOLOGY, DZL, chosen_edges, bb, R)
+        if switch == 1:             # LP only "top level" constraints
+            from algorithms.LP_all_constraints import linear_prog_method
+            chosen_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False)
 
-        print("done")
+        if switch == 2:             # LP all constraints
+            from algorithms.LP_all_constraints import linear_prog_method
+            chosen_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'])
+
+        plot_graph_all_3(FILES['g_r_path'], TOPOLOGY, DZL, chosen_edges, BOUNDING_BOX, R)

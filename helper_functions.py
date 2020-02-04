@@ -1,6 +1,9 @@
 import networkx as nx
 import json
 import re
+import os
+
+from Utilities.Logging import set_out
 
 
 def load_graph_form_json(path):
@@ -83,18 +86,68 @@ def construct_json(path, nodes, edges):
     return json_data
 
 
+def create_output_directory(FILES, g):
+    FILES['g_path'] = "output/{}".format(g.split('.')[0])  # gpath = output/test
+    if not os.path.exists(FILES['g_path']):
+        os.mkdir(FILES['g_path'])
+
+
+def create_r_output_directory(FILES, R):
+    FILES['g_r_path'] = FILES['g_path'] + "/r_{}".format(R)  # g_r_path = output/test/r_10
+    os.mkdir(FILES['g_r_path'])
+
+    FILES['g_r_path_data'] = FILES['g_r_path'] + "/data"
+    os.mkdir(FILES['g_r_path_data'])
+
+    set_out(FILES['g_r_path'] + "/log.txt")
+
+
+def load_graph_names(FILES):
+    gl = []
+    for (dp, dn, filenames) in os.walk(FILES['input_dir']):
+        gl.extend(filenames)
+        break
+    return gl
+
+
+def generate_or_read_json(FILES, scale, g):
+
+    FILES['js_name'] = FILES['g_path'] + "/" + g.split(".")[0] + ".json"  # jsname = output/test/test.json
+    if not os.path.exists(FILES['js_name']):
+        js = None
+
+        if g.split('.')[1] == "lgf":
+            js = generate_json_from_lgf(FILES['input_dir'] + g, scale)
+
+        if g.split('.')[1] == "gml":
+            js = generate_json_from_gml(FILES['input_dir'] + g, scale)
+
+        if js is None:
+            print("Not supported file format for {}. continuing as if nothing happened".format(g))
+            return None
+
+        with open(FILES['js_name'], "w") as f:
+            f.write(js)
+
+        return True
+    else:
+        return True     # if file already exists, all good
+
+
 def calculateBoundingBox(graph, r=0, epsilon=0):
     if type(graph) != type(nx.Graph()):
         raise TypeError("parameter 'graph' is not the expected type! (nx.Graph)")
 
     points = [p[1]['coords'] for p in graph.nodes(data=True)]
 
-    return {
+    ret = {
         "x_min": min(p[0] for p in points) - r - epsilon,
         "y_min": min(p[1] for p in points) - r - epsilon,
         "x_max": max(p[0] for p in points) + r + epsilon,
-        "y_max": max(p[1] for p in points) + r + epsilon
+        "y_max": max(p[1] for p in points) + r + epsilon,
     }
+    ret["small_side"] = min(ret["x_max"] - ret["x_min"], ret["y_max"] - ret["y_min"])
+    return ret
 
 
 def get_coords_for_node(node, graph):
