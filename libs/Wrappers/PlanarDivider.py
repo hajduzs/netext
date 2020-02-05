@@ -24,6 +24,9 @@ def get_division_from_json(R, jsname, filepath):
     with open(filepath) as f:
         faces = f.readlines()
 
+    if len(faces) == 0:
+        return None
+
     for f in faces:
         f = f.rstrip("  \n")
 

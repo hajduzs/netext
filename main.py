@@ -17,7 +17,7 @@ FILES = {}
 if len(sys.argv) > 1:
     FILES['input_dir'] = "graphs/" + sys.argv[1] + "/"
 else:
-    FILES['input_dir'] = "graphs/debug/"
+    FILES['input_dir'] = "graphs/degen_segment/"
 
 if not os.path.exists("output"):
     os.mkdir("output")
@@ -39,13 +39,17 @@ for g in func.load_graph_names(FILES):
     func.append_data_with_edge_chains(TOPOLOGY)
 
     R_values = [BOUNDING_BOX['small_side'] * scale / 100 for scale in range(5, 16)]
-    for R in R_values[3:5]:
+    for R in R_values[1:2]:
 
         func.create_r_output_directory(FILES, R)
 
         # generate danger zones, and then the bipartite disaster graph
 
-        DZL = DangerZoneList(TOPOLOGY, R, GAMMA, get_division_from_json(R, FILES['js_name'], "{}/faces.txt".format(FILES['g_r_path_data'])))
+        faces = get_division_from_json(R, FILES['js_name'], "{}/faces.txt".format(FILES['g_r_path_data']))
+        if faces is None:
+            print("something went awfully wrong, im sorry. (could not calculate faces properly)")
+            continue
+        DZL = DangerZoneList(TOPOLOGY, R, GAMMA, faces)
         logging.write_dangerzones("{}/{}".format(FILES['g_r_path_data'], "zones.txt"), DZL)
         BPD = BipartiteDisasterGraph(CutList(DZL))
 
