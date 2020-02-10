@@ -3,23 +3,25 @@ import os
 import time
 from Utilities.Logging import log
 
+from ctypes import *
+lib = cdll.LoadLibrary('libs/libpartition.so')
+
+lib.divide.argtypes = [c_int, c_float, c_char_p, c_char_p]
+lib.divide.restype = c_int
+
 
 def get_division_from_json(R, jsname, filepath):
-    arguments = [str(R), jsname, filepath]
 
-    if os.path.exists(filepath):
-        os.remove(filepath)
+    CR = 60
 
-    process = ["libs/dangerzone"]
-    process.extend(arguments)
+    if not os.path.exists(filepath):
 
-    log("Calculate division of [{}], w: [{}]\n".format(jsname, filepath), "PLANAR_DIV")
-    start = time.time()
+        log("Calculate division of [{}], w: [{}]\n".format(jsname, filepath), "PLANAR_DIV")
+        start = time.time()
 
-    planar_div_executable = subprocess.Popen(process)
-    planar_div_executable.wait()
+        result = lib.divide(60, R, jsname.encode(), filepath.encode())
 
-    log("Time needed: {}\n".format(time.time()-start), "PLANAR_DIV")
+        log("Time needed: {}\n".format(time.time()-start), "PLANAR_DIV")
 
     with open(filepath) as f:
         faces = f.readlines()

@@ -5,6 +5,7 @@
 #include <CGAL/Arrangement_2.h>
 
 #include <string>
+#include <ostream>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -75,14 +76,11 @@ int find_node_index(json& graph, std::string id)
   return -1;
 }
 
-const int CIRCLE_RESOLUTION = 120;
-
-int main(int argc, char **argv)
+extern "C" { int divide(int CIRCLE_RESOLUTION, float DISASTER_R, char* ipath, char* opath)
 {
-  int DISASTER_R = atof(argv[1]);
-  std::ifstream file(argv[2]);
+  std::ifstream file(ipath);
   std::ofstream fileo;
-  fileo.open(argv[3], std::ios_base::app);
+  fileo.open(opath, std::ios_base::app);
 
   json graph;
   file >> graph;
@@ -165,5 +163,13 @@ int main(int argc, char **argv)
   Arrangement_2 arr2;
   print_arrangement(arr, fileo);
   fileo.close();
-  return (0);
+  return 0;
+}}
+
+int main(int argc, char **argv)
+{
+  return 0;
 }
+
+
+
