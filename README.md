@@ -1,3 +1,6 @@
+Drive link for the results:
+https://drive.google.com/open?id=1dw6HzCxIG8O7d_JEt07xZIFpzewpe185
+
 # NetExt
 
 SIG compalition:
