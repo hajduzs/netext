@@ -2,6 +2,7 @@ import networkx as nx
 import json
 import re
 import os
+import math
 
 from Utilities.Logging import set_out
 
@@ -49,6 +50,7 @@ def generate_json_from_gml(path, scale=1):
     node_data = G.nodes(data=True)
     edge_data = G.edges(data=True)
 
+    candidate_nodes = []
     nodes = []
     edges = []
     forbidden_nodes = []
@@ -57,7 +59,24 @@ def generate_json_from_gml(path, scale=1):
         if u'Longitude' not in [k for k, v in node[1].items()]:
             forbidden_nodes.append(node[0])
             continue
-        c = "[" + str(node[1][u'Longitude'] * scale) + ", " + str(node[1][u'Latitude'] * scale) + "]"
+
+        # Longitude-Latitude conversion
+        candidate_nodes.append((
+            node[1][u'Longitude'],
+            node[1][u'Latitude']
+        ))
+
+    avg_lon = sum([n[0] for n in candidate_nodes]) / len(candidate_nodes)
+    avg_lat = sum([n[1] for n in candidate_nodes]) / len(candidate_nodes)
+
+    for n in candidate_nodes:
+        dx = (avg_lon - n[0]) * 40000 * math.cos((avg_lat + n[1]) + math.pi / 360) / 360
+        dy = (avg_lat - n[1]) * 40000 / 360
+        print("converted {} to {}".format(n, (dx,dy)))
+        nodes.append((dx, dy))
+
+    for node in nodes:
+        c = "[" + str(node[0] * scale) + ", " + str(node[0] * scale) + "]"
         s = "{ \"id\": \"" + str(node[0]) + "\", \"coords\": " + c + " }"
         nodes.append(s)
 
