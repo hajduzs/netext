@@ -72,7 +72,7 @@ def generate_json_from_gml(path, scale=1):
     for n in candidate_nodes:
         dx = (avg_lon - n[0]) * 40000 * math.cos((avg_lat + n[1]) + math.pi / 360) / 360
         dy = (avg_lat - n[1]) * 40000 / 360
-        print("converted {} to {}".format(n, (dx,dy)))
+        print("converted {} to {}".format(n, (dx, dy)))
         nodes.append((dx, dy))
 
     for node in nodes:
