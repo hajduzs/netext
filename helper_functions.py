@@ -1,6 +1,10 @@
 import networkx as nx
 import json
 import re
+import os
+import math
+
+from Utilities.Logging import set_out
 
 
 def load_graph_form_json(path):
@@ -46,6 +50,7 @@ def generate_json_from_gml(path, scale=1):
     node_data = G.nodes(data=True)
     edge_data = G.edges(data=True)
 
+    candidate_nodes = []
     nodes = []
     edges = []
     forbidden_nodes = []
@@ -54,7 +59,24 @@ def generate_json_from_gml(path, scale=1):
         if u'Longitude' not in [k for k, v in node[1].items()]:
             forbidden_nodes.append(node[0])
             continue
-        c = "[" + str(node[1][u'Longitude'] * scale) + ", " + str(node[1][u'Latitude'] * scale) + "]"
+
+        # Longitude-Latitude conversion
+        candidate_nodes.append((
+            node[1][u'Longitude'],
+            node[1][u'Latitude']
+        ))
+
+    avg_lon = sum([n[0] for n in candidate_nodes]) / len(candidate_nodes)
+    avg_lat = sum([n[1] for n in candidate_nodes]) / len(candidate_nodes)
+
+    for n in candidate_nodes:
+        dx = (avg_lon - n[0]) * 40000 * math.cos((avg_lat + n[1]) + math.pi / 360) / 360
+        dy = (avg_lat - n[1]) * 40000 / 360
+        print("converted {} to {}".format(n, (dx, dy)))
+        nodes.append((dx, dy))
+
+    for node in nodes:
+        c = "[" + str(node[0] * scale) + ", " + str(node[0] * scale) + "]"
         s = "{ \"id\": \"" + str(node[0]) + "\", \"coords\": " + c + " }"
         nodes.append(s)
 
@@ -83,18 +105,68 @@ def construct_json(path, nodes, edges):
     return json_data
 
 
+def create_output_directory(FILES, g):
+    FILES['g_path'] = "output/{}".format(g.split('.')[0])  # gpath = output/test
+    if not os.path.exists(FILES['g_path']):
+        os.mkdir(FILES['g_path'])
+
+
+def create_r_output_directory(FILES, R):
+    FILES['g_r_path'] = FILES['g_path'] + "/r_{}".format(R)  # g_r_path = output/test/r_10
+    os.mkdir(FILES['g_r_path'])
+
+    FILES['g_r_path_data'] = FILES['g_r_path'] + "/data"
+    os.mkdir(FILES['g_r_path_data'])
+
+    set_out(FILES['g_r_path'] + "/log.txt")
+
+
+def load_graph_names(FILES):
+    gl = []
+    for (dp, dn, filenames) in os.walk(FILES['input_dir']):
+        gl.extend(filenames)
+        break
+    return gl
+
+
+def generate_or_read_json(FILES, scale, g):
+
+    FILES['js_name'] = FILES['g_path'] + "/" + g.split(".")[0] + ".json"  # jsname = output/test/test.json
+    if not os.path.exists(FILES['js_name']):
+        js = None
+
+        if g.split('.')[1] == "lgf":
+            js = generate_json_from_lgf(FILES['input_dir'] + g, scale)
+
+        if g.split('.')[1] == "gml":
+            js = generate_json_from_gml(FILES['input_dir'] + g, scale)
+
+        if js is None:
+            print("Not supported file format for {}. continuing as if nothing happened".format(g))
+            return None
+
+        with open(FILES['js_name'], "w") as f:
+            f.write(js)
+
+        return True
+    else:
+        return True     # if file already exists, all good
+
+
 def calculateBoundingBox(graph, r=0, epsilon=0):
     if type(graph) != type(nx.Graph()):
         raise TypeError("parameter 'graph' is not the expected type! (nx.Graph)")
 
     points = [p[1]['coords'] for p in graph.nodes(data=True)]
 
-    return {
+    ret = {
         "x_min": min(p[0] for p in points) - r - epsilon,
         "y_min": min(p[1] for p in points) - r - epsilon,
         "x_max": max(p[0] for p in points) + r + epsilon,
-        "y_max": max(p[1] for p in points) + r + epsilon
+        "y_max": max(p[1] for p in points) + r + epsilon,
     }
+    ret["small_side"] = min(ret["x_max"] - ret["x_min"], ret["y_max"] - ret["y_min"])
+    return ret
 
 
 def get_coords_for_node(node, graph):

@@ -1,15 +1,15 @@
 from NetworkModels.ConstarintGraph import ConstraintGraph
 from libs.Wrappers.PathPlanner import PathPlanner
-import helper_functions as func
 
 import algorithms.algoritmhs_helper_functions as a_func
+import helper_functions as func
 import Utilities.Logging as logging
 
 import mip
 import itertools
 
 
-def lp_all_constraints(TOPOLOGY, DZL, BPD, R, g_r_path):
+def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True):
     # SET UP PATH PLANNER
 
     PP = PathPlanner()
@@ -33,7 +33,7 @@ def lp_all_constraints(TOPOLOGY, DZL, BPD, R, g_r_path):
     for n, d in BPD.graph.nodes(data=True):
 
         if d["bipartite"] == 1:
-            return None
+            continue
 
         # get ccordinates
         pnodes = d["vrtx"].edge
@@ -48,7 +48,11 @@ def lp_all_constraints(TOPOLOGY, DZL, BPD, R, g_r_path):
             ids.update(BPD.return_ids_for_cut(c))
         ids = list(ids)
 
-        i_subsets = itertools.chain.from_iterable(itertools.combinations(ids, r) for r in range(1, len(ids) + 1))
+        if all_constr:
+            i_subsets = itertools.chain.from_iterable(itertools.combinations(ids, r) for r in range(1, len(ids) + 1))
+        else:
+            i_subsets = [ids]
+
         for subs in i_subsets:
             PP.calculate_r_detour(pi, pg, subs)
             MODEL += mip.xsum([X[k] for k in subs]) <= PP.getCost()

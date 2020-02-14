@@ -15,9 +15,9 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R):
     for n, d in BPD.graph.nodes(data=True):
 
         if d["bipartite"] == 1:
-            return None
+            continue
 
-        # get ccordinates
+            # get ccordinates
         pnodes = d["vrtx"].edge
         pi = func.get_coords_for_node(pnodes[0], TOPOLOGY)
         pg = func.get_coords_for_node(pnodes[1], TOPOLOGY)
@@ -110,14 +110,12 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R):
             print("diff: {}".format(d["cost"] - d["t_cost"]))
 
         min_n = 0
-        min_d = 0
         # select minimal cost edge
         mincost = float("inf")
         for n, d in corr:
             if mincost > d["cost"] - d["t_cost"]:
                 mincost = d["cost"] - d["t_cost"]
                 min_n = n
-                min_d = d
 
         # set that in the graph
         for n, d in corr:
@@ -138,3 +136,13 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R):
 
     evs_to_remove = set(BPD.graph.nodes) - set([n for n, d in nodes])
     BPD.graph.remove_nodes_from(evs_to_remove)
+
+    chosen_edges = []
+
+    for n, d in BPD.graph.nodes(data=True):
+        chosen_edges.append((d['vrtx'].edge, d['path'], d['cost'],  list(d['ids'])))
+
+    # edge, path, cost, zones
+    # ( (1, 2), 'path', 311.01, [2,3] )
+
+    return chosen_edges
