@@ -4,7 +4,7 @@ import re
 import os
 import math
 
-from Utilities.Logging import set_out
+from Utilities.Logging import set_out,log
 
 
 def load_graph_form_json(path):
@@ -135,14 +135,19 @@ def generate_or_read_json(FILES, scale, g):
     if not os.path.exists(FILES['js_name']):
         js = None
 
-        if g.split('.')[1] == "lgf":
-            js = generate_json_from_lgf(FILES['input_dir'] + g, scale)
+        try:
 
-        if g.split('.')[1] == "gml":
-            js = generate_json_from_gml(FILES['input_dir'] + g, scale)
+            if g.split('.')[1] == "lgf":
+                js = generate_json_from_lgf(FILES['input_dir'] + g, scale)
+
+            if g.split('.')[1] == "gml":
+                js = generate_json_from_gml(FILES['input_dir'] + g, scale)
+
+        except:
+            log("could not read {}", "INPUT")
 
         if js is None:
-            print("Not supported file format for {}. continuing as if nothing happened".format(g))
+            log("Not supported file format for {}. continuing as if nothing happened".format(g), "INPUT")
             return None
 
         with open(FILES['js_name'], "w") as f:

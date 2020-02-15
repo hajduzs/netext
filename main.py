@@ -17,7 +17,7 @@ FILES = {}
 if len(sys.argv) > 1:
     FILES['input_dir'] = "graphs/" + sys.argv[1] + "/"
 else:
-    FILES['input_dir'] = "graphs/degen_segment/"
+    FILES['input_dir'] = "graphs/sample1/"
 
 if not os.path.exists("output"):
     os.mkdir("output")
@@ -56,7 +56,7 @@ for g in func.load_graph_names(FILES):
         # now we can choose the method
 
         chosen_edges = None
-        switch = 1
+        switch = 2
 
         if switch == 0:             # Original heuristic (v2)
             from algorithms.heuristic_version_2 import heuristic_2
@@ -66,7 +66,11 @@ for g in func.load_graph_names(FILES):
             from algorithms.LP_all_constraints import linear_prog_method
             chosen_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False)
 
-        if switch == 2:             # LP all constraints
+        if switch == 2:             # LP top level start, more constr if solution does not satisfy =s
+            from algorithms.LP_all_constraints import linear_prog_method
+            chosen_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False, constr_it=True)
+
+        if switch == 3:             # LP all constraints
             from algorithms.LP_all_constraints import linear_prog_method
             chosen_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'])
 

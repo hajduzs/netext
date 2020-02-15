@@ -9,7 +9,7 @@ import mip
 import itertools
 
 
-def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True):
+def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_it=False):
     # SET UP PATH PLANNER
 
     PP = PathPlanner()
@@ -67,6 +67,8 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True):
     print('solution:')
     for v in MODEL.vars:
         print('{} : {}'.format(v.name, v.x))
+
+    # TODO: ide kell beszúrni, ha egy constr nem =re teljesül MODEL += <i_subs>
 
     CG = ConstraintGraph(MODEL.constrs)
 

@@ -1,21 +1,6 @@
 import networkx as nx
 import mip
 
-class TreeNode:
-
-    def __init__(self):
-        self.name = None
-        self.root = False
-        self.parent = None
-        self.children = []
-        self.finished = False
-
-    def getPath(self):
-        if self.root:
-            return []
-        else:
-            return [self.name].extend([self.parent.getPath()])
-
 
 class ConstraintGraph:
 
