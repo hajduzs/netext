@@ -68,6 +68,11 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
     for v in MODEL.vars:
         print('{} : {}'.format(v.name, v.x))
 
+    for c in MODEL.constrs:
+        if c.slack > 0 and ( 0 in [ v for k, v in c.expr.expr.items()] ):
+            print("HOLD UP")
+            logging.log("NON_ZERO_SLACK FOUND: {}\n".format(c))
+
     # TODO: ide kell beszúrni, ha egy constr nem =re teljesül MODEL += <i_subs>
 
     CG = ConstraintGraph(MODEL.constrs)

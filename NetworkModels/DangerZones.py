@@ -57,7 +57,7 @@ class DangerZoneList:
         self.dangerZones = []
         self.load_dangerzones(topology, r, gamma, faces)
         reset_counter()
-        log(self, "DZ_CONSTRUCTION")
+        #log(self, "DZ_CONSTRUCTION")
 
     def add_danger_zone(self, dz):
         self.dangerZones.append(dz)

@@ -7,6 +7,7 @@ from Utilities.Plotting2 import plot_graph_all_3
 from libs.Wrappers.PlanarDivider import get_division_from_json
 import os
 import sys
+from Utilities.Logging import log
 
 # GLOBAL VARIABLES
 
@@ -30,6 +31,7 @@ for g in func.load_graph_names(FILES):
 
     scale = 1
     if func.generate_or_read_json(FILES, scale, g) is None:
+        log("COULD NOT GENERATE JSON")
         continue
 
     # Load topology, append it with data, create bounding box
@@ -40,6 +42,8 @@ for g in func.load_graph_names(FILES):
 
     R_values = [BOUNDING_BOX['small_side'] * scale / 100 for scale in range(5, 16)]
     for R in R_values[1:2]:
+
+        print("{} for {}".format(R, FILES['g_path']))
 
         func.create_r_output_directory(FILES, R)
 
@@ -56,7 +60,7 @@ for g in func.load_graph_names(FILES):
         # now we can choose the method
 
         chosen_edges = None
-        switch = 2
+        switch = 1
 
         if switch == 0:             # Original heuristic (v2)
             from algorithms.heuristic_version_2 import heuristic_2
@@ -74,4 +78,7 @@ for g in func.load_graph_names(FILES):
             from algorithms.LP_all_constraints import linear_prog_method
             chosen_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'])
 
-        plot_graph_all_3(FILES['g_r_path'], TOPOLOGY, DZL, chosen_edges, BOUNDING_BOX, R)
+        try:
+            plot_graph_all_3(FILES['g_r_path'], TOPOLOGY, DZL, chosen_edges, BOUNDING_BOX, R)
+        except:
+            log("sorry, could not plot")
