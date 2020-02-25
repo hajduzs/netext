@@ -20,6 +20,7 @@ def log(message, env=environment, lvl=0):
 
 # Environments so I don't forget:
 '''
+INPUT                       ::      JSON generation form raw input
 PLANAR_DIV                  ::      The face generating wrapper
 PATH_PLANNER                ::      SIG shortest detour lib calls 
 DZ_CONSTRUCTION             ::      DangerZone construction
