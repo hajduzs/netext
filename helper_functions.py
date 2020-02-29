@@ -36,12 +36,80 @@ def generate_json_from_lgf(path, scale=1):
     for line in all_match:
         line = line[0]
         if line[3] == '':
-            c = "[" + str(float(line[1]) * scale) + ", " + str(float(line[2]) * scale) + "]"
-            nodes.append("{ \"id\": \"" + line[0] + "\", \"coords\": " + c + " }")
+            nodes.append({
+                "id": str(line[0]),
+                "coords": [
+                    float(line[1]) * scale,
+                    float(line[2]) * scale
+                ]
+            })
         else:
-            edges.append("{ \"from\": \"" + line[3] + "\", \"to\": \"" + line[4] + "\" }")
+            edges.append({
+                "from": str(line[3]),
+                "to": str(line[4])
+            })
 
-    return construct_json(path, nodes, edges)
+    return prep_graph_for_json_dump(path, nodes, edges)
+
+def generate_json_from_lgfll(path, scale=1):
+
+    G = generate_json_from_lgf(path, scale)
+
+    candidate_nodes = []
+
+    for node in G["nodes"]:
+        # Longitude-Latitude conversion
+        candidate_nodes.append((
+            node["coords"][0],
+            node["coords"][1],
+            node["id"]
+        ))
+
+    avg_lon = sum([n[0] for n in candidate_nodes]) / len(candidate_nodes)
+    avg_lat = sum([n[1] for n in candidate_nodes]) / len(candidate_nodes)
+
+    newnodes = []
+    for n in candidate_nodes:
+        dx = (avg_lon - n[0]) * 40000 * math.cos((avg_lat + n[1]) + math.pi / 360) / 360
+        dy = (avg_lat - n[1]) * 40000 / 360
+        print("converted {} to {}".format(n, (dx, dy)))
+        newnodes.append({
+            "id": str(n[2]),
+            "coords": [
+                dx * scale,
+                dy * scale
+            ]
+        })
+
+    G["nodes"] = newnodes
+    return G
+
+
+def generate_json_from_ggml(path, scale=1):
+    G = nx.read_gml(path, label='id')
+
+    node_data = G.nodes(data=True)
+    edge_data = G.edges(data=True)
+
+    nodes = []
+    edges = []
+
+    for id, data in node_data:
+        nodes.append({
+            "id": str(id),
+            "coords": [
+                data['graphics']['x'],
+                data['graphics']['y'],
+            ]
+        })
+
+    for n1, n2, data in edge_data:
+        edges.append({
+            "from": str(n1),
+            "to": str(n2)
+        })
+
+    return prep_graph_for_json_dump(path, nodes, edges)
 
 
 def generate_json_from_gml(path, scale=1):
@@ -63,7 +131,8 @@ def generate_json_from_gml(path, scale=1):
         # Longitude-Latitude conversion
         candidate_nodes.append((
             node[1][u'Longitude'],
-            node[1][u'Latitude']
+            node[1][u'Latitude'],
+            node[0]
         ))
 
     avg_lon = sum([n[0] for n in candidate_nodes]) / len(candidate_nodes)
@@ -73,36 +142,80 @@ def generate_json_from_gml(path, scale=1):
         dx = (avg_lon - n[0]) * 40000 * math.cos((avg_lat + n[1]) + math.pi / 360) / 360
         dy = (avg_lat - n[1]) * 40000 / 360
         print("converted {} to {}".format(n, (dx, dy)))
-        nodes.append((dx, dy))
-
-    for node in nodes:
-        c = "[" + str(node[0] * scale) + ", " + str(node[0] * scale) + "]"
-        s = "{ \"id\": \"" + str(node[0]) + "\", \"coords\": " + c + " }"
-        nodes.append(s)
+        nodes.append({
+            "id": str(n[2]),
+            "coords": [
+                dx * scale,
+                dy * scale
+            ]
+        })
 
     for edge in edge_data:
         if edge[0] in forbidden_nodes or edge[1] in forbidden_nodes:
             continue
-        s = "{ \"from\": \"" + str(edge[0]) + "\", \"to\": \"" + str(edge[1]) + "\" }"
-        edges.append(s)
+        edges.append({
+            "from": str(edge[0]),
+            "to": str(edge[1])
+        })
 
-    return construct_json(path, nodes, edges)
+    return prep_graph_for_json_dump(path, nodes, edges)
 
 
-def construct_json(path, nodes, edges):
-    json_data = "{ \"name\": \"" + path.split("/")[-1].split(".")[0] + "\", \"nodes\": ["
+def node_already_in(n, nodes):
+    for c in nodes:
+        if n["coords"] == c["coords"]:
+            return c["id"]
+    return None
 
-    for node in nodes:
-        json_data += node + ","
-    json_data = json_data[:-1]
 
-    json_data += "], \"edges\": ["
-    for edge in edges:
-        json_data += edge + ","
-    json_data = json_data[:-1]
+def prep_graph_for_json_dump(path, nodes, edges):
 
-    json_data += "] }"
-    return json_data
+    if False:
+        nodes_only_once = []
+        duplicates = {}
+        for n in nodes:
+            ins = node_already_in(n, nodes_only_once)
+            if ins is not None:
+                if ins in duplicates:
+                    duplicates[ins].append(n["id"])
+                else:
+                    duplicates[ins] = [n["id"]]
+            else:
+                nodes_only_once.append(n)
+
+
+
+        dlist = []
+        for k,v in duplicates.items():
+            dlist.append( [k]+ v )
+
+        edges_repaired = []
+
+        for e in edges:
+            f = e["from"]
+            t = e["to"]
+            for lst in dlist:
+                if f in lst:
+                    fi = lst.index(f)
+                    dlfi = dlist.index(lst)
+                if t in lst:
+                    ti = lst.index(t)
+                    dlti = dlist.index(lst)
+            if dlfi == dlti:
+                continue
+            edges_repaired.append({
+                "from": dlist[dlfi][0],
+                "to": dlist[dlti][0]
+            })
+
+
+        print("weeded out duplicate nodes")
+
+    return {
+        "name": path.split("/")[-1].split(".")[0],
+        "nodes": nodes,     # _only_once,
+        "edges": edges      # _repaired
+    }
 
 
 def create_output_directory(FILES, g):
@@ -135,23 +248,29 @@ def generate_or_read_json(FILES, scale, g):
     if not os.path.exists(FILES['js_name']):
         js = None
 
-        try:
+        #try:
 
-            if g.split('.')[1] == "lgf":
-                js = generate_json_from_lgf(FILES['input_dir'] + g, scale)
+        if g.split('.')[1] == "lgf":
+            js = generate_json_from_lgf(FILES['input_dir'] + g, scale)
 
-            if g.split('.')[1] == "gml":
-                js = generate_json_from_gml(FILES['input_dir'] + g, scale)
+        if g.split('.')[1] == "lgfll":
+            js = generate_json_from_lgfll(FILES['input_dir'] + g, scale)
 
-        except:
-            log("could not read {}", "INPUT")
+        if g.split('.')[1] == "gml":
+            js = generate_json_from_gml(FILES['input_dir'] + g, scale)
+
+        if g.split('.')[1] == "ggml":
+            js = generate_json_from_ggml(FILES['input_dir'] + g, scale)
+
+        #except:
+        #    log("could not read {}".format(FILES['js_name'], "INPUT")
 
         if js is None:
             log("Not supported file format for {}. continuing as if nothing happened".format(g), "INPUT")
             return None
 
         with open(FILES['js_name'], "w") as f:
-            f.write(js)
+            f.write(json.dumps(js))
 
         return True
     else:
@@ -204,3 +323,6 @@ def stringify_points(points):
         ret += str(p[0]) + " " + str(p[1]) + "  "
     ret = ret.rstrip()
     return ret
+
+
+

@@ -12,22 +12,23 @@ lib.divide.restype = c_int
 
 def get_division_from_json(R, jsname, filepath):
 
-    CR = 60
+    CR = 60 # circle resoulution
+    result = 0
 
     if not os.path.exists(filepath):
 
         log("Calculate division of [{}], w: [{}]\n".format(jsname, filepath), "PLANAR_DIV")
         start = time.time()
 
-        result = lib.divide(60, R, jsname.encode(), filepath.encode())
+        result = lib.divide(CR, R, jsname.encode(), filepath.encode())
 
-        log("Time needed: {}\n".format(time.time()-start), "PLANAR_DIV")
+        log("Time needed: {} result: {}\n".format(time.time()-start, result), "PLANAR_DIV")
+
+    if result != 0:
+        return None
 
     with open(filepath) as f:
         faces = f.readlines()
-
-    if len(faces) == 0:
-        return None
 
     for f in faces:
         f = f.rstrip("  \n")

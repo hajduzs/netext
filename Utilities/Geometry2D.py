@@ -15,7 +15,10 @@ def length(v):
 
 
 def normalize(v):
-    return v[0] / length(v), v[1] / length(v)
+    try:
+        return v[0] / length(v), v[1] / length(v)
+    except ZeroDivisionError:
+        return float('Inf'), float('Inf')
 
 
 def normal_vector(p1, p2):

@@ -18,7 +18,7 @@ FILES = {}
 if len(sys.argv) > 1:
     FILES['input_dir'] = "graphs/" + sys.argv[1] + "/"
 else:
-    FILES['input_dir'] = "graphs/debug/"
+    FILES['input_dir'] = "graphs/lgf_latlong/"
 
 if not os.path.exists("output"):
     os.mkdir("output")
@@ -55,6 +55,13 @@ for g in func.load_graph_names(FILES):
             continue
         DZL = DangerZoneList(TOPOLOGY, R, GAMMA, faces)
         logging.write_dangerzones("{}/{}".format(FILES['g_r_path_data'], "zones.txt"), DZL)
+
+        # TODO what if there are too many Danger zones (for ex: colt with 7500)
+
+        if len(DZL.dangerZones) > 699:
+            log("We do not continue further, as there are too many danger zones.\n")
+            continue
+
         BPD = BipartiteDisasterGraph(CutList(DZL))
 
         # now we can choose the method

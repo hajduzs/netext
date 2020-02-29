@@ -1,13 +1,22 @@
 import matplotlib.pyplot as plt
 import networkx as nx
+from shapely.geometry import Polygon
 from descartes import PolygonPatch
+import helper_functions as func
 
 
 def get_colors_form_file(n):
     file = open("other_data/distinct_colors.txt", 'r')
-    ret = [file.readline().rstrip() for i in range(0, n)]
+    colors = file.readlines()
     file.close()
-    return ret
+    ret = [c.rstrip() for c in colors]
+    if n > 64:
+        for i in range(64, n):
+            ret.append(ret[i % 64])
+        return ret
+    else:
+        return ret[:n]
+
 
 def plot_graph_with_node_labels(fp, graph):
     plt.close()
@@ -173,4 +182,45 @@ def plot_graph_all_3(fp, graph, DZL, chosen, bb, R, epsilon=0, nodesize=1, linew
     tikzplotlib.save(filepath)
 
     filepath = fp + "/" + graph.graph['name'] + ".png"
+    figure.savefig(filepath, dpi=300)
+
+
+def plot_dangerzone(jsonpath, zonepath, R):
+    TOPOLOGY = func.load_graph_form_json(jsonpath)
+    func.append_data_with_edge_chains(TOPOLOGY)
+    zones = []
+    with open(zonepath) as f:
+        lines = f.readlines()
+        for i in range(1, len(lines)):
+            p = lines[i].split(";")[1]
+            zones.append(func.destringify_points(p))
+
+    bb = func.calculateBoundingBox(TOPOLOGY, R)
+    epsilon = 0
+
+    figure, ax = plt.subplots()
+    ax.set_xlim((bb["x_min"] - epsilon - R, bb["x_max"] + epsilon + R))
+    ax.set_ylim((bb["y_min"] - epsilon - R, bb["y_max"] + epsilon + R))
+
+    for node, data in TOPOLOGY.nodes(data=True):
+        c = plt.Circle(data['coords'], 0.4, color='blue')
+        ax.add_artist(c)
+
+    for n1, n2, data in TOPOLOGY.edges(data=True):
+        for i in range(0, len(data['points']) - 1):
+            p1 = data['points'][i]
+            p2 = data['points'][i + 1]
+
+            line = plt.Line2D((p1[0], p2[0]), (p1[1], p2[1]), color='black', linewidth=0.2)
+            ax.add_artist(line)
+
+    cc = 0
+    colors = get_colors_form_file(len(zones))
+
+    for z in zones:
+        zone = Polygon(z)
+        ax.add_patch(PolygonPatch(zone, fc=colors[cc], ec=colors[cc], alpha=0.4, zorder=3))
+        cc += 1
+
+    filepath = "dangerzone.png"
     figure.savefig(filepath, dpi=300)
