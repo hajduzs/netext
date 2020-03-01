@@ -79,7 +79,11 @@ class DangerZoneList:
 
     def load_dangerzones(self, topology, r, gamma, faces):
         for face in faces:
-            poly = geom.Polygon(destringify_points(face))
+            points = destringify_points(face)
+            if len(points) < 3:
+                continue
+
+            poly = geom.Polygon(points)
 
             if poly.is_empty:  # ignore really small and degenetate polygons
                 continue

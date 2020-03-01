@@ -12,7 +12,7 @@ lib.divide.restype = c_int
 
 def get_division_from_json(R, jsname, filepath):
 
-    CR = 60 # circle resoulution
+    CR = 48 # circle resoulution
     result = 0
 
     if not os.path.exists(filepath):

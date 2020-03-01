@@ -18,7 +18,7 @@ FILES = {}
 if len(sys.argv) > 1:
     FILES['input_dir'] = "graphs/" + sys.argv[1] + "/"
 else:
-    FILES['input_dir'] = "graphs/lgf_latlong/"
+    FILES['input_dir'] = "graphs/sigsegv/"
 
 if not os.path.exists("output"):
     os.mkdir("output")
