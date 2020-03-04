@@ -25,6 +25,22 @@ def load_graph_form_json(path):
 
         return G
 
+def generate_json_from_graphml(path, scale):
+    G = nx.read_graphml(path)
+    nodes = []
+    for n in G.nodes(data=True):
+        nodes.append({
+            "id": n[0],
+            "coords": [
+                n[1]['x'],
+                n[1]['y']
+            ]
+        })
+
+    edges = [{"from": e[0], "to": e[1]} for e in G.edges]
+
+    return prep_graph_for_json_dump(path, nodes, edges)
+
 
 def generate_json_from_lgf(path, scale=1):
     file = open(path, 'r')
@@ -242,6 +258,8 @@ def load_graph_names(FILES):
     return gl
 
 
+
+
 def generate_or_read_json(FILES, scale, g):
 
     FILES['js_name'] = FILES['g_path'] + "/" + g.split(".")[0] + ".json"  # jsname = output/test/test.json
@@ -261,6 +279,9 @@ def generate_or_read_json(FILES, scale, g):
 
         if g.split('.')[1] == "ggml":
             js = generate_json_from_ggml(FILES['input_dir'] + g, scale)
+
+        if g.split('.')[1] == "graphml":
+            js = generate_json_from_graphml(FILES['input_dir'] + g, scale)
 
         #except:
         #    log("could not read {}".format(FILES['js_name'], "INPUT")
