@@ -10,8 +10,9 @@ import sys
 from Utilities.Logging import log
 
 # GLOBAL VARIABLES
+import math
 
-GAMMA = 1
+GAMMA = 2 / math.sqrt(3)    # anything wider than 120° will be ignored
 FILES = {}
 
 # paths

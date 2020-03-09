@@ -67,6 +67,7 @@ def generate_json_from_lgf(path, scale=1):
 
     return prep_graph_for_json_dump(path, nodes, edges)
 
+
 def generate_json_from_lgfll(path, scale=1):
 
     G = generate_json_from_lgf(path, scale)
