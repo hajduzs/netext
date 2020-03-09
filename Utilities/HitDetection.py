@@ -2,7 +2,7 @@ import networkx as nx
 
 from math import sqrt
 from Utilities.Geometry2D import point_to_point, point_to_line, normal_vector
-
+import helper_functions as func
 
 def node_hit_by(node, p, r):
     np = node[1]['coords']
@@ -80,11 +80,11 @@ def is_face_valid_dangerzone(gamma, poly, r, graph):
             xd = nx.connected_components(graph)
             cl = [c for c in nx.connected_components(graph) if len(c) == 1]
             if len(cl) != 0:
-                c = cl[0]
+                c = cl[0].pop()
                 valid = False
                 for x, y in poly.exterior.coords:
-                    sp = [node for node in c.nodes(data=True)]
-                    t = point_to_point(sp[0][1]["coords"], (x, y))
+                    sp = func.get_coords_for_node(c, graph)
+                    t = point_to_point(sp, (x, y))
                     if t > r * gamma:
                         valid = True
                         break
