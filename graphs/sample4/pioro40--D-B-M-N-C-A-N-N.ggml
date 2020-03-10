@@ -1,4 +1,4 @@
-reator  "sndlib.ext.generators.gml.GmlGenerator"
+Creator  "sndlib.ext.generators.gml.GmlGenerator"
 Version  "1.0"
 
 graph [

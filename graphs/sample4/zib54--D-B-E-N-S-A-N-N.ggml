@@ -5,6 +5,7 @@ graph [
   label     "zib54--D-B-E-N-S-A-N-N"
   name      "zib54--D-B-E-N-S-A-N-N"
   directed  1
+  multigraph 1
 
   node [
     id     0
