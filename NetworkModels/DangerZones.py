@@ -17,11 +17,10 @@ class DangerZone:
 
     id = 0
 
-    def __init__(self, graph, poly, s_poly):
+    def __init__(self, graph, s_poly):
         self.id = DangerZone.id
         DangerZone.id += 1
         self.graph = graph
-        self.polygon = poly
         self.string_poly = s_poly
 
     def get_disaster_cuts(self):
@@ -98,7 +97,7 @@ class DangerZoneList:
             G = hit_graph_with_disaster(topology, r, (p.x, p.y))
 
             if is_face_valid_dangerzone(gamma, poly, r, G):
-                dz = DangerZone(G, poly, face)
+                dz = DangerZone(G, face)
                 self.add_danger_zone(dz)
 
     def generate_disaster_cuts(self):
