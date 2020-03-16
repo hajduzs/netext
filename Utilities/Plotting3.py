@@ -38,6 +38,7 @@ def replot(gname, jsonpath, zones, paths, R):
 
     graph = read_json_graph(jsonpath, R)
 
+    # set plot size
     bb = func.calculateBoundingBox(graph, R)
     ax.set_xlim((bb["x_min"] - R, bb["x_max"] + R))
     ax.set_ylim((bb["y_min"] - R, bb["y_max"] + R))
@@ -56,7 +57,6 @@ def replot(gname, jsonpath, zones, paths, R):
 
     with open(zones) as f:
         zonelist = [z.split(";")[1] for z in f.readlines()][1:]
-
 
     with open(paths) as f:
         pathlist = [z.split(";") for z in f.readlines()][1:]
