@@ -90,9 +90,26 @@ def replot(gname, jsonpath, zones, paths, R):
     filepath = gname + ".png"
     figure.savefig(filepath, dpi=300)
 
-
+'''
 replot("teliasonero_eu",
        "../work/teliasonero_eu/teliasonero_eu.json",
        "../work/teliasonero_eu/r_0.28619999999999995/data/zones.txt",
        "../work/teliasonero_eu/r_0.28619999999999995/data/paths.txt",
        0.28619999999999995)
+'''
+
+import os
+
+def replot_all():
+    graphs = []
+    for(dp, dn, fns) in os.walk("../output"):
+        graphs = dn
+        break
+
+    for x in graphs:
+        for(dp, dn, fns) in os.walk("../output/{}/".format(x)):
+            lol = "{}{}/data/".format(dp, dn[0])
+            replot(x, "../output/{}/{}".format(x,fns[0]), lol+"zones.txt", lol+"paths.txt", float(dn[0].split("_")[1]))
+            break
+
+replot_all()
