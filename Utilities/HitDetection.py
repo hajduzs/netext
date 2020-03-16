@@ -75,7 +75,7 @@ def is_face_valid_dangerzone(gamma, poly, r, graph):
     valid = False
     if not nx.is_connected(graph):
         # remove later
-        # return True
+        return True
         if nx.number_connected_components(graph) == 2:
             xd = nx.connected_components(graph)
             cl = [c for c in nx.connected_components(graph) if len(c) == 1]

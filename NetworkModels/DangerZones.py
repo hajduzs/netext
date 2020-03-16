@@ -37,15 +37,15 @@ class DangerZone:
                 else:
                     set1.extend(components[j])
             cuts.append(DisasterCut(self.id, [set0, set1]))
+
+        # wont be needing this anymore
+        del self.graph
+
         return cuts
 
     def __str__(self):
         s = "-- Danger zone --\n"
         s += "id:\t\t{}\n".format(self.id)
-        s += "components:\t\t{}\n".format(nx.number_connected_components(self.graph))
-        s += "graph:\n"
-        s += "\tnodes:\t{}\n".format(self.graph.nodes)
-        s += "\tedges:\t{}\n".format(self.graph.edges)
         s += "poly:\t\t{}\n".format(self.string_poly)
         return s
 

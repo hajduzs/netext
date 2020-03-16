@@ -6,7 +6,7 @@ import helper_functions as func
 import json
 
 def get_colors_form_file(n):
-    file = open("../other_data/distinct_colors.txt", 'r')
+    file = open("other_data/distinct_colors.txt", 'r')
     colors = file.readlines()
     file.close()
     ret = [c.rstrip() for c in colors]
@@ -18,7 +18,7 @@ def get_colors_form_file(n):
         return ret[:n]
 
 
-def read_json_graph(jsonpath, R):
+def read_json_graph(jsonpath):
     with open(jsonpath) as f:
         data = json.load(f)
 
@@ -33,10 +33,11 @@ def read_json_graph(jsonpath, R):
 
     return G
 
-def replot(gname, jsonpath, zones, paths, R):
+
+def replot(gname, grpath, jsonpath, zones, paths, R):
     figure, ax = plt.subplots()
 
-    graph = read_json_graph(jsonpath, R)
+    graph = read_json_graph(jsonpath)
 
     # set plot size
     bb = func.calculateBoundingBox(graph, R)
@@ -82,23 +83,34 @@ def replot(gname, jsonpath, zones, paths, R):
         if cc == len(zones):
             cc = 0
 
-    filepath = gname + ".tex"
+    filepath = grpath + "/" + gname + ".tex"
 
     import tikzplotlib
     tikzplotlib.save(filepath)
 
-    filepath = gname + ".png"
+    filepath = grpath + "/" + gname + ".png"
     figure.savefig(filepath, dpi=300)
 
 '''
 replot("teliasonero_eu",
+       "../work/teliasonero_eu/r_0.28619999999999995",
        "../work/teliasonero_eu/teliasonero_eu.json",
        "../work/teliasonero_eu/r_0.28619999999999995/data/zones.txt",
        "../work/teliasonero_eu/r_0.28619999999999995/data/paths.txt",
        0.28619999999999995)
 '''
 
+
+def plot(files):
+    replot(files["g_path"].split("/")[-1],
+           files["g_r_path"],
+           files["js_name"],
+           files["g_r_path_data"] + "/zones.txt",
+           files["g_r_path_data"] + "/paths.txt",
+           float(files["g_r_path"].split("/")[-1].split("_")[-1]))
+
 import os
+
 
 def replot_all():
     graphs = []
@@ -109,7 +121,46 @@ def replot_all():
     for x in graphs:
         for(dp, dn, fns) in os.walk("../output/{}/".format(x)):
             lol = "{}{}/data/".format(dp, dn[0])
-            replot(x, "../output/{}/{}".format(x,fns[0]), lol+"zones.txt", lol+"paths.txt", float(dn[0].split("_")[1]))
+            # replot(x, "../output/{}/{}".format(x,fns[0]), lol+"zones.txt", lol+"paths.txt", float(dn[0].split("_")[1]))
             break
 
-replot_all()
+
+def plot_dangerzone(jsonpath, zonepath, R):
+    TOPOLOGY = func.load_graph_form_json(jsonpath)
+    func.append_data_with_edge_chains(TOPOLOGY)
+    zones = []
+    with open(zonepath) as f:
+        lines = f.readlines()
+        for i in range(1, len(lines)):
+            p = lines[i].split(";")[1]
+            zones.append(func.destringify_points(p))
+
+    bb = func.calculateBoundingBox(TOPOLOGY, R)
+    epsilon = 0
+
+    figure, ax = plt.subplots()
+    ax.set_xlim((bb["x_min"] - epsilon - R, bb["x_max"] + epsilon + R))
+    ax.set_ylim((bb["y_min"] - epsilon - R, bb["y_max"] + epsilon + R))
+
+    for node, data in TOPOLOGY.nodes(data=True):
+        c = plt.Circle(data['coords'], 0.4, color='blue')
+        ax.add_artist(c)
+
+    for n1, n2, data in TOPOLOGY.edges(data=True):
+        for i in range(0, len(data['points']) - 1):
+            p1 = data['points'][i]
+            p2 = data['points'][i + 1]
+
+            line = plt.Line2D((p1[0], p2[0]), (p1[1], p2[1]), color='black', linewidth=0.2)
+            ax.add_artist(line)
+
+    cc = 0
+    colors = get_colors_form_file(len(zones))
+
+    for z in zones:
+        zone = Polygon(z)
+        ax.add_patch(PolygonPatch(zone, fc=colors[cc], ec=colors[cc], alpha=0.4, zorder=3))
+        cc += 1
+
+    filepath = "dangerzone.png"
+    figure.savefig(filepath, dpi=300)

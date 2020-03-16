@@ -12,7 +12,6 @@ class DisasterCut:
 
     def __init__(self, danger_zones, node_sets):
         self.id = DisasterCut.id
-        self.name = 'v'+str(DisasterCut.id)
         DisasterCut.id += 1
         self.dangerZones = [danger_zones]
         self.nodeSets = node_sets
@@ -23,6 +22,9 @@ class DisasterCut:
         n1b = set(self.nodeSets[1])
         n2b = set(other.nodeSets[1])
         return (n1a == n2a and n1b == n2b) or (n1a == n2b and n1b == n2a)
+
+    def get_name(self):
+        return 'v'+str(self.id)
 
     def join(self, other):
         self.dangerZones.extend(other.dangerZones)

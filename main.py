@@ -3,7 +3,7 @@ import Utilities.Logging as logging
 from NetworkModels.DangerZones import DangerZoneList
 from NetworkModels.DisasterCuts import CutList
 from NetworkModels.BipartiteGraph import BipartiteDisasterGraph
-from Utilities.Plotting2 import plot_graph_all_3
+from Utilities.Plotting3 import plot
 from libs.Wrappers.PlanarDivider import get_division_from_json
 import os
 import sys
@@ -68,7 +68,7 @@ for g in func.load_graph_names(FILES):
         # now we can choose the method
 
         chosen_edges = None
-        switch = 1
+        switch = 3
 
         if switch == 0:             # Original heuristic (v2)
             from algorithms.heuristic_version_2 import heuristic_2
@@ -87,6 +87,6 @@ for g in func.load_graph_names(FILES):
             chosen_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'])
 
         try:
-            plot_graph_all_3(FILES['g_r_path'], TOPOLOGY, DZL, chosen_edges, BOUNDING_BOX, R)
+            plot(FILES)
         except:
             log("sorry, could not plot")

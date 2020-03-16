@@ -66,7 +66,7 @@ class BipartiteDisasterGraph:
 
     def return_ids_for_cut(self, node_name):
         for n in self.Cuts.cutList:
-            if n.name == node_name:
+            if n.get_name() == node_name:
                 return n.return_danger_zone_ids()
         return None
 
@@ -77,12 +77,12 @@ class BipartiteDisasterGraph:
             G.add_node(e.name, vrtx=e, bipartite=0)
 
         for c in self.Cuts:
-            G.add_node(c.name, cut=c, bipartite=1, cost=float("inf"), neigh=0)
+            G.add_node(c.get_name(), cut=c, bipartite=1, cost=float("inf"), neigh=0)
 
         for e in self.Edges:
             for c in self.Cuts:
                 if e in c.return_protecting_edges():
-                    G.add_edge(e.name, c.name, weight=0, cost=0, valid=0, path=None)
+                    G.add_edge(e.name, c.get_name(), weight=0, cost=0, valid=0, path=None)
         return G
 
     def return_graph(self):
