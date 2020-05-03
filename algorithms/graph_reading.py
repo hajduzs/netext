@@ -131,7 +131,13 @@ def generate_json_from_gml(path):
             forbidden_nodes.append(node[0])
             continue
 
-        nodes.append((node[1][u'Longitude'], node[1][u'Latitude'], node[0]))
+        nodes.append({
+            "id": str(node[0]),
+            "coords": [
+                node[1][u'Longitude'],
+                node[1][u'Latitude'],
+            ]
+        })
 
     for edge in edge_data:
         if edge[0] in forbidden_nodes or edge[1] in forbidden_nodes:
