@@ -2,7 +2,8 @@ import networkx as nx
 
 from math import sqrt
 from Utilities.Geometry2D import point_to_point, point_to_line, normal_vector
-import helper_functions as func
+from algorithms import helper_functions as func
+
 
 def node_hit_by(node, p, r):
     np = node[1]['coords']

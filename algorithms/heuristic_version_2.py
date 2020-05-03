@@ -1,5 +1,4 @@
-import helper_functions as func
-import algorithms.algoritmhs_helper_functions as a_func
+from algorithms import helper_functions as func
 from libs.Wrappers.PathPlanner import PathPlanner
 
 

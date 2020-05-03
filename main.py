@@ -1,24 +1,31 @@
-import helper_functions as func
-import Utilities.Logging as logging
+import algorithms.graph_reading
+from algorithms import helper_functions as func
+import Utilities.Writer as l_out
 from NetworkModels.DangerZones import DangerZoneList
 from NetworkModels.DisasterCuts import CutList
 from NetworkModels.BipartiteGraph import BipartiteDisasterGraph
-from Utilities.Plotting3 import plot
+from Utilities.Plotting import plot
 from libs.Wrappers.PlanarDivider import get_division_from_json
 import os
 import sys
-from Utilities.Logging import log
+import shutil
+import logging
 
 # GLOBAL VARIABLES
 import math
+
+
+DEBUG_MODE = True
 
 GAMMA = 2 / math.sqrt(3)    # anything wider than 120° will be ignored
 FILES = {}
 
 # paths
-if len(sys.argv) > 1:
+if len(sys.argv) > 1 and DEBUG_MODE is False:
     FILES['input_dir'] = "graphs/" + sys.argv[1] + "/"
 else:
+    if os.path.exists("output"):
+        shutil.rmtree("output")
     FILES['input_dir'] = "graphs/debug/"
 
 if not os.path.exists("output"):
@@ -30,23 +37,22 @@ for g in func.load_graph_names(FILES):
 
     # Generate (or read, if it already exists) JSON from input file
 
-    scale = 1
-    if func.generate_or_read_json(FILES, scale, g) is None:
-        log("COULD NOT GENERATE JSON")
+    if func.generate_or_read_json(FILES, g) is None:
+        logging.critical("Could not generate JSON")
         continue
 
     # Load topology, append it with data, create bounding box
 
-    TOPOLOGY = func.load_graph_form_json(FILES['js_name'])
-    BOUNDING_BOX = func.calculateBoundingBox(TOPOLOGY)
+    TOPOLOGY = algorithms.graph_reading.load_graph_form_json(FILES['js_name'])
+    BOUNDING_BOX = func.calculate_bounding_box(TOPOLOGY)
     func.append_data_with_edge_chains(TOPOLOGY)
 
     R_values = [BOUNDING_BOX['small_side'] * scale / 100 for scale in range(5, 16)]
     for R in R_values[1:2]:
 
-        print("{} for {}".format(R, FILES['g_path']))
-
         func.create_r_output_directory(FILES, R)
+
+        logging.debug(f'{R} for {FILES["g_path"]} -- source: {FILES["input_dir"]}')
 
         # generate danger zones, and then the bipartite disaster graph
 
@@ -55,12 +61,13 @@ for g in func.load_graph_names(FILES):
             print("something went awfully wrong, im sorry. (could not calculate faces properly)")
             continue
         DZL = DangerZoneList(TOPOLOGY, R, GAMMA, faces)
-        logging.write_dangerzones("{}/{}".format(FILES['g_r_path_data'], "zones.txt"), DZL)
+        l_out.write_dangerzones("{}/{}".format(FILES['g_r_path_data'], "zones.txt"), DZL)
 
         # TODO what if there are too many Danger zones (for ex: colt with 7500)
 
         if len(DZL.dangerZones) > 699:
-            log("We do not continue further, as there are too many danger zones.\n")
+            logging.warning("We do not continue further, as there are too many danger zones.")
+            logging.info(f'In total: {len(DZL.dangerZones)}')
             continue
 
         BPD = BipartiteDisasterGraph(CutList(DZL))
@@ -89,4 +96,4 @@ for g in func.load_graph_names(FILES):
         try:
             plot(FILES)
         except:
-            log("sorry, could not plot")
+            logging.warning("sorry, could not plot")

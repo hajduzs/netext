@@ -2,8 +2,14 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from shapely.geometry import Polygon
 from descartes import PolygonPatch
-import helper_functions as func
+
+import algorithms.graph_reading
+from algorithms import helper_functions as func
 import json
+import logging
+
+logging.getLogger('matplotlib.font_manager').disabled = True
+
 
 def get_colors_form_file(n):
     file = open("other_data/distinct_colors.txt", 'r')
@@ -40,7 +46,7 @@ def replot(gname, grpath, jsonpath, zones, paths, R):
     graph = read_json_graph(jsonpath)
 
     # set plot size
-    bb = func.calculateBoundingBox(graph, R)
+    bb = func.calculate_bounding_box(graph, R)
     ax.set_xlim((bb["x_min"] - R, bb["x_max"] + R))
     ax.set_ylim((bb["y_min"] - R, bb["y_max"] + R))
 
@@ -91,15 +97,6 @@ def replot(gname, grpath, jsonpath, zones, paths, R):
     filepath = grpath + "/" + gname + ".png"
     figure.savefig(filepath, dpi=300)
 
-'''
-replot("teliasonero_eu",
-       "../work/teliasonero_eu/r_0.28619999999999995",
-       "../work/teliasonero_eu/teliasonero_eu.json",
-       "../work/teliasonero_eu/r_0.28619999999999995/data/zones.txt",
-       "../work/teliasonero_eu/r_0.28619999999999995/data/paths.txt",
-       0.28619999999999995)
-'''
-
 
 def plot(files):
     replot(files["g_path"].split("/")[-1],
@@ -109,24 +106,18 @@ def plot(files):
            files["g_r_path_data"] + "/paths.txt",
            float(files["g_r_path"].split("/")[-1].split("_")[-1]))
 
-import os
 
-
-def replot_all():
-    graphs = []
-    for(dp, dn, fns) in os.walk("../output"):
-        graphs = dn
-        break
-
-    for x in graphs:
-        for(dp, dn, fns) in os.walk("../output/{}/".format(x)):
-            lol = "{}{}/data/".format(dp, dn[0])
-            # replot(x, "../output/{}/{}".format(x,fns[0]), lol+"zones.txt", lol+"paths.txt", float(dn[0].split("_")[1]))
-            break
+def plot_preformatted(files):
+    replot(files["g_path"],
+           files["g_r_path"],
+           files["js_name"],
+           files["g_r_path_zone"],
+           files["g_r_path_path"],
+           files["r"])
 
 
 def plot_dangerzone(jsonpath, zonepath, R):
-    TOPOLOGY = func.load_graph_form_json(jsonpath)
+    TOPOLOGY = algorithms.graph_reading.load_graph_form_json(jsonpath)
     func.append_data_with_edge_chains(TOPOLOGY)
     zones = []
     with open(zonepath) as f:
@@ -135,7 +126,7 @@ def plot_dangerzone(jsonpath, zonepath, R):
             p = lines[i].split(";")[1]
             zones.append(func.destringify_points(p))
 
-    bb = func.calculateBoundingBox(TOPOLOGY, R)
+    bb = func.calculate_bounding_box(TOPOLOGY, R)
     epsilon = 0
 
     figure, ax = plt.subplots()

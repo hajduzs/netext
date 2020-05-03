@@ -1,4 +1,5 @@
-import helper_functions as func
+from algorithms import helper_functions as func
+
 
 def get_ids_to_avoid(n, d, BPD, TOPOLOGY):
     if d["bipartite"] == 1:

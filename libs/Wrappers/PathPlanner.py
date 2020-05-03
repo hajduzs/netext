@@ -1,4 +1,3 @@
-from Utilities.Logging import log
 from ctypes import *
 
 lib = cdll.LoadLibrary('libs/siglib.so')
@@ -27,7 +26,7 @@ class PathPlanner(c_void_p):
         self.obj = lib.PP_new()
 
     # polydata MUST be a string
-    def addDangerZone(self, polydata):
+    def addDangerZone(self, polydata: str):
         lib.PP_addDangerZone(self.obj, polydata.encode())
         #log("Added Danger Zone: [ {} ]\n".format(polydata), "PATH_PLANNER")
 
@@ -64,11 +63,11 @@ class PathPlanner(c_void_p):
         lib.PP_setR(self.obj, c_float(R))
         #log("Set R: {}\n".format(R), "PATH_PLANNER")
 
-    def setStartPoint(self, x, y):
+    def setStartPoint(self, x: float, y: float):
         lib.PP_setStartPoint(self.obj, c_float(x), c_float(y))
         #log("Set starting point: ({},{})\n".format(x, y), "PATH_PLANNER")
     
-    def setEndPoint(self, x, y):
+    def setEndPoint(self, x: float, y: float):
         lib.PP_setEndPoint(self.obj, c_float(x), c_float(y))
         #log("Set ending point: ({},{})\n".format(x, y), "PATH_PLANNER")
 

@@ -1,10 +1,9 @@
 from NetworkModels.ConstarintGraph import ConstraintGraph
 from libs.Wrappers.PathPlanner import PathPlanner
 
-import algorithms.algoritmhs_helper_functions as a_func
-import helper_functions as func
-import Utilities.Logging as logging
-
+from algorithms import helper_functions as func
+import logging
+import Utilities.Writer as l_out
 import mip
 import itertools
 
@@ -64,14 +63,13 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
     # max egy percig fusson
     status = MODEL.optimize(max_seconds=60)
 
-    print('solution:')
+    logging.info('LP solution:')
     for v in MODEL.vars:
-        print('{} : {}'.format(v.name, v.x))
+        logging.info(f'{v.name} : {v.x}')
 
     for c in MODEL.constrs:
-        if c.slack > 0 and ( 0 in [ v for k, v in c.expr.expr.items()] ):
-            print("HOLD UP")
-            logging.log("NON_ZERO_SLACK FOUND: {}\n".format(c))
+        if c.slack > 0 and (0 in [v for k, v in c.expr.expr.items()]):
+            logging.warning(f'NON_ZERO_SLACK FOUND: {c}')
 
     # TODO: ide kell beszúrni, ha egy constr nem =re teljesül MODEL += <i_subs>
 
@@ -81,19 +79,17 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
 
     chosen_edges = CG.optimize(CL)
 
-    logging.write_paths("{}/{}".format(g_r_path, "paths.txt"), chosen_edges)
+    l_out.write_paths("{}/{}".format(g_r_path, "paths.txt"), chosen_edges)
 
-    acsum = 0
+    a_sum = 0  # actual sum
     for edge, path, cost, zones in chosen_edges:
-        acsum += cost
-        lowerbound = sum([MODEL.vars[id].x for id in zones])
-        print("ids: {}".format([z for z in zones]))
-        print("compare done for edge {}. LB: {} AC: {} .. diff: {} (+{}%)".format(edge, lowerbound, cost,
-                                                                                  cost - lowerbound,
-                                                                                  100 * (cost - lowerbound) / lowerbound))
+        a_sum += cost
+        lower_bound = sum([MODEL.vars[z_id].x for z_id in zones])
+        logging.info(f'ids: {[z for z in zones]}')
+        logging.info(f'compare done for edge {edge}. LB: {lower_bound} AC: {cost} .. diff: {cost - lower_bound} '
+                     f'(+{100 * (cost - lower_bound) / lower_bound}%)')
 
-    lbsum = sum([MODEL.vars[i].x for i in range(0, len(DZL))])
-    print("In total: LB: {}, AC: {} .. diff: {} (+{}%)".format(lbsum, acsum, acsum - lbsum,
-                                                               100 * (acsum - lbsum) / lbsum))
+    lb_sum = sum([MODEL.vars[i].x for i in range(0, len(DZL))])  # lower bound sum
+    logging.info(f'In total: LB: {lb_sum}, AC: {a_sum} .. diff: {a_sum - lb_sum} (+{100 * (a_sum - lb_sum) / lb_sum}%)')
 
     return chosen_edges

@@ -1,7 +1,6 @@
-import subprocess
 import os
 import time
-from Utilities.Logging import log
+import logging
 
 from ctypes import *
 lib = cdll.LoadLibrary('libs/libpartition.so')
@@ -17,12 +16,12 @@ def get_division_from_json(R, jsname, filepath):
 
     if not os.path.exists(filepath):
 
-        log("Calculate division of [{}], w: [{}]\n".format(jsname, filepath), "PLANAR_DIV")
+        logging.debug(f'Calculate division of [{jsname}], w: [{filepath}]')
         start = time.time()
 
         result = lib.divide(CR, R, jsname.encode(), filepath.encode())
 
-        log("Time needed: {} result: {}\n".format(time.time()-start, result), "PLANAR_DIV")
+        logging.info(f'Time needed: {time.time()-start} result: {result}\n')
 
     if result != 0:
         return None

@@ -1,6 +1,6 @@
-import networkx as nx
+import logging
 import mip
-from Utilities.Logging import log
+import networkx as nx
 
 
 class ConstraintGraph:
@@ -22,12 +22,13 @@ class ConstraintGraph:
                 self.G.add_edges_from([(z, name) for z in zones])
 
     def print_data(self):
-        log("LHS nodes: \n")
+        logging.debug('Constraint graph data:')
+        logging.debug("LHS nodes:")
         for n, d in self.G.nodes(data=True):
             if d['bipartite'] == 0:
-                log("{} <{}> : {}\n".format(n, [x for x in self.G.neighbors(n)],  d['cost']))
-        log("RHS nodes: \n")
-        log("{}\n".format([n for n, d in self.G.nodes(data=True) if d['bipartite'] == 1]))
+                logging.debug("{} <{}> : {}".format(n, [x for x in self.G.neighbors(n)],  d['cost']))
+        logging.debug("RHS nodes:")
+        logging.debug(f'{[n for n, d in self.G.nodes(data=True) if d["bipartite"] == 1]}')
 
     def LHS(self):
         return [(n, d) for n, d in self.G.nodes(data=True) if d["bipartite"] == 0]
