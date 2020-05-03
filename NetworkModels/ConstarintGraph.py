@@ -22,6 +22,7 @@ class ConstraintGraph:
                 self.G.add_edges_from([(z, name) for z in zones])
 
     def print_data(self):
+        return
         logging.debug('Constraint graph data:')
         logging.debug("LHS nodes:")
         for n, d in self.G.nodes(data=True):

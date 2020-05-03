@@ -106,5 +106,5 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
     lb_sum = sum([MODEL.vars[i].x for i in range(0, len(DZL))])  # lower bound sum
     logging.info(f'In total: LB: {lb_sum}, AC: {a_sum} .. diff: {a_sum - lb_sum} (+{100 * (a_sum - lb_sum) / lb_sum}%)')
 
-    return MODEL
+    return MODEL, chosen_edges
     #return chosen_edges

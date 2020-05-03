@@ -183,4 +183,4 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R, g_r_path, compare_model=None):
         logging.info(
             f'In total: LB: {lb_sum}, AC: {a_sum} .. diff: {a_sum - lb_sum} (+{100 * (a_sum - lb_sum) / lb_sum}%)')
 
-    #return chosen_edges
+    return chosen_edges

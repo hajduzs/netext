@@ -1,5 +1,6 @@
 import algorithms.graph_reading
 from algorithms import helper_functions as func
+from algorithms.algoritmhs_helper_functions import compare_chosen
 import Utilities.Writer as l_out
 from NetworkModels.DangerZones import DangerZoneList
 from NetworkModels.DisasterCuts import CutList
@@ -15,7 +16,7 @@ import logging
 import math
 
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 GAMMA = 2 / math.sqrt(3)    # anything wider than 120° will be ignored
 FILES = {}
@@ -97,8 +98,12 @@ for g in func.load_graph_names(FILES):
         if switch == -1:
             from algorithms.heuristic_version_2 import heuristic_2
             from algorithms.LP_all_constraints import linear_prog_method
-            mod = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False)
-            heuristic_2(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], mod)
+            mod, lp_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False)
+            compare_chosen(lp_edges, TOPOLOGY, R, "LP")
+            logging.info("-")
+            he_edges = heuristic_2(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], mod)
+            compare_chosen(he_edges, TOPOLOGY, R, "HEUR")
+
         try:
             plot(FILES)
         except:

@@ -20,10 +20,15 @@ def create_r_output_directory(FILES, R):
     FILES['g_r_path_data'] = FILES['g_r_path'] + "/data"
     os.mkdir(FILES['g_r_path_data'])
 
-    logging.basicConfig(filename=FILES['g_r_path'] + "/log.txt",
-                        filemode='w',
-                        format='%(levelname)-8.8s%(message)s',
-                        level=logging.DEBUG)
+    # set Up logging
+    fileh = logging.FileHandler(FILES['g_r_path'] + "/log.txt", 'w')
+    formt = logging.Formatter('%(levelname)-8.8s%(message)s')
+    fileh.setFormatter(formt)
+    log = logging.getLogger()
+    for hdlr in log.handlers[:]:  # remove all old handlers
+        log.removeHandler(hdlr)
+    log.addHandler(fileh)
+    log.setLevel(logging.DEBUG)
 
 
 def load_graph_names(FILES):
