@@ -21,7 +21,7 @@ def get_division_from_json(R, jsname, filepath):
 
         result = lib.divide(CR, R, jsname.encode(), filepath.encode())
 
-        logging.info(f'Time needed: {time.time()-start} result: {result}\n')
+        logging.info(f'Time needed: {time.time()-start} result: {result}')
 
     if result != 0:
         return None

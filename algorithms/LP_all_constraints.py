@@ -6,10 +6,13 @@ import logging
 import Utilities.Writer as l_out
 import mip
 import itertools
+import time
 
 
 def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_it=False):
     # SET UP PATH PLANNER
+
+    logging.debug(f' -- Beginning LP method. all_constr: {all_constr}')
 
     PP = PathPlanner()
     PP.setR(R)
@@ -25,6 +28,8 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
     X = [MODEL.add_var(var_type=mip.CONTINUOUS) for i in range(0, len(DZL))]
 
     # constraintek feltoltese
+
+    start_time = time.time()
 
     CL = {}
     c_index = 0
@@ -58,10 +63,18 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
             CL[c_index] = (pnodes, PP.getPath())
             c_index += 1
 
+    logging.debug('Constraint graph updated from BPD.')
+    logging.debug(f'Time needed: {time.time() - start_time}')
+    start_time = time.time()
+
     MODEL.objective = mip.maximize(mip.xsum(X))
 
     # max egy percig fusson
     status = MODEL.optimize(max_seconds=60)
+
+    logging.debug('LP Solution calculated.')
+    logging.debug(f'Time needed: {time.time() - start_time}')
+    start_time = time.time()
 
     logging.info('LP solution:')
     for v in MODEL.vars:
@@ -79,8 +92,9 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
 
     chosen_edges = CG.optimize(CL)
 
-    l_out.write_paths("{}/{}".format(g_r_path, "paths.txt"), chosen_edges)
+    l_out.write_paths("{}/{}".format(g_r_path, "lp_paths.txt"), chosen_edges)
 
+    logging.debug(" ## Comparing LP solution to actual lower bound:")
     a_sum = 0  # actual sum
     for edge, path, cost, zones in chosen_edges:
         a_sum += cost
@@ -92,4 +106,5 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
     lb_sum = sum([MODEL.vars[i].x for i in range(0, len(DZL))])  # lower bound sum
     logging.info(f'In total: LB: {lb_sum}, AC: {a_sum} .. diff: {a_sum - lb_sum} (+{100 * (a_sum - lb_sum) / lb_sum}%)')
 
-    return chosen_edges
+    return MODEL
+    #return chosen_edges

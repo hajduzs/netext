@@ -40,7 +40,7 @@ def read_json_graph(jsonpath):
     return G
 
 
-def replot(gname, grpath, jsonpath, zones, paths, R):
+def replot(gname, grpath, jsonpath, zones, paths, R, type):
     figure, ax = plt.subplots()
 
     graph = read_json_graph(jsonpath)
@@ -89,12 +89,12 @@ def replot(gname, grpath, jsonpath, zones, paths, R):
         if cc == len(zones):
             cc = 0
 
-    filepath = grpath + "/" + gname + ".tex"
+    filepath = grpath + "/" + gname + type + ".tex"
 
     import tikzplotlib
     tikzplotlib.save(filepath)
 
-    filepath = grpath + "/" + gname + ".png"
+    filepath = grpath + "/" + gname + type + ".png"
     figure.savefig(filepath, dpi=300)
 
 
@@ -103,8 +103,16 @@ def plot(files):
            files["g_r_path"],
            files["js_name"],
            files["g_r_path_data"] + "/zones.txt",
-           files["g_r_path_data"] + "/paths.txt",
-           float(files["g_r_path"].split("/")[-1].split("_")[-1]))
+           files["g_r_path_data"] + "/lp_paths.txt",
+           float(files["g_r_path"].split("/")[-1].split("_")[-1]),
+           "_lp")
+    replot(files["g_path"].split("/")[-1],
+           files["g_r_path"],
+           files["js_name"],
+           files["g_r_path_data"] + "/zones.txt",
+           files["g_r_path_data"] + "/heur_paths.txt",
+           float(files["g_r_path"].split("/")[-1].split("_")[-1]),
+           "_heur")
 
 
 def plot_preformatted(files):

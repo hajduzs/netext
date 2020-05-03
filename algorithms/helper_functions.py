@@ -22,7 +22,7 @@ def create_r_output_directory(FILES, R):
 
     logging.basicConfig(filename=FILES['g_r_path'] + "/log.txt",
                         filemode='w',
-                        format='%(levelname)-8.5s%(message)s',
+                        format='%(levelname)-8.8s%(message)s',
                         level=logging.DEBUG)
 
 

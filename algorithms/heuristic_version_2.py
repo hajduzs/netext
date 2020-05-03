@@ -1,8 +1,14 @@
 from algorithms import helper_functions as func
 from libs.Wrappers.PathPlanner import PathPlanner
+import logging
+import Utilities.Writer as l_out
+import time
 
 
-def heuristic_2(TOPOLOGY, DZL, BPD, R):
+def heuristic_2(TOPOLOGY, DZL, BPD, R, g_r_path, compare_model=None):
+
+    logging.debug('-- Beginning HEURISTIC method.')
+    start_time = time.time()
 
     PP = PathPlanner()
     PP.setR(R)
@@ -39,8 +45,11 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R):
         d["cost"] = cost
         d["ids"] = set(ids)
 
-    # HEUR STEP 2: get minimum edge cover
+    logging.debug('BPD loaded with costs.')
+    logging.debug(f'Time needed: {time.time() - start_time}')
+    start_time = time.time()
 
+    # HEUR STEP 2: get minimum edge cover
     H = BPD.graph.copy()
 
     nodes = []
@@ -62,6 +71,10 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R):
                 neigh_cuts = [v for v in H.nodes if H.has_edge(n, v)]
                 d["neigh"] = len(neigh_cuts)
 
+    logging.debug('Minimum edge cover acquired.')
+    logging.debug(f'Time needed: {time.time() - start_time}')
+    start_time = time.time()
+
     # HEUR STEP 3: OPTIMIZING ON THESE NEW EDGES
 
     # get every danger zone that is avoided by two or more edges
@@ -71,9 +84,11 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R):
         for j in range(i + 1, len(nodes)):
             multiples.update(nodes[i][1]["ids"].intersection(nodes[j][1]["ids"]))
 
+    rep_count = 0
     for Z in multiples:
         # get corresponding edges
         corr = [n for n in nodes if Z in n[1]["ids"]]
+        rep_count += len(corr) - 1
         # set theoretical new edge cost and path for all (not containing Z)
         for n, d in corr:
             # get coordinates
@@ -131,10 +146,17 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R):
             for v in [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v) and Z in BPD.return_ids_for_cut(v)]:
                 BPD.graph.remove_edge(n, v)
 
+    logging.debug(f'Optimized on chosen edges. Multiples: ({len(multiples)}), opt: ({rep_count})')
+    logging.debug(f'Time needed: {time.time() - start_time}')
+    start_time = time.time()
+
     # 4. AFTERWORK: only the selected edges (nodes) need to be in the graph.
 
     evs_to_remove = set(BPD.graph.nodes) - set([n for n, d in nodes])
     BPD.graph.remove_nodes_from(evs_to_remove)
+
+    logging.debug(f'Deleted edges not used. ({len(evs_to_remove)})')
+    logging.debug(f'Time needed: {time.time() - start_time}')
 
     chosen_edges = []
 
@@ -144,4 +166,21 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R):
     # edge, path, cost, zones
     # ( (1, 2), 'path', 311.01, [2,3] )
 
-    return chosen_edges
+    l_out.write_paths("{}/{}".format(g_r_path, "heur_paths.txt"), chosen_edges)
+
+    logging.debug(" ## Comparing HEURISTIC solution to actual lower bound:")
+
+    if compare_model is not None:
+        a_sum = 0  # actual sum
+        for edge, path, cost, zones in chosen_edges:
+            a_sum += cost
+            lower_bound = sum([compare_model.vars[z_id].x for z_id in zones])
+            logging.info(f'ids: {[z for z in zones]}')
+            logging.info(f'compare done for edge {edge}. LB: {lower_bound} AC: {cost} .. diff: {cost - lower_bound} '
+                         f'(+{100 * (cost - lower_bound) / lower_bound}%)')
+
+        lb_sum = sum([compare_model.vars[i].x for i in range(0, len(DZL))])  # lower bound sum
+        logging.info(
+            f'In total: LB: {lb_sum}, AC: {a_sum} .. diff: {a_sum - lb_sum} (+{100 * (a_sum - lb_sum) / lb_sum}%)')
+
+    #return chosen_edges

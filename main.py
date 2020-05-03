@@ -65,9 +65,10 @@ for g in func.load_graph_names(FILES):
 
         # TODO what if there are too many Danger zones (for ex: colt with 7500)
 
+        logging.info(f'Danger zones in total: {len(DZL.dangerZones)}')
+
         if len(DZL.dangerZones) > 699:
             logging.warning("We do not continue further, as there are too many danger zones.")
-            logging.info(f'In total: {len(DZL.dangerZones)}')
             continue
 
         BPD = BipartiteDisasterGraph(CutList(DZL))
@@ -75,24 +76,29 @@ for g in func.load_graph_names(FILES):
         # now we can choose the method
 
         chosen_edges = None
-        switch = 3
+        switch = -1
 
         if switch == 0:             # Original heuristic (v2)
             from algorithms.heuristic_version_2 import heuristic_2
-            chosen_edges = heuristic_2(TOPOLOGY, DZL, BPD, R)
+            heuristic_2(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'])
 
         if switch == 1:             # LP only "top level" constraints
             from algorithms.LP_all_constraints import linear_prog_method
-            chosen_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False)
+            linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False)
 
         if switch == 2:             # LP top level start, more constr if solution does not satisfy =s
             from algorithms.LP_all_constraints import linear_prog_method
-            chosen_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False, constr_it=True)
+            linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False, constr_it=True)
 
         if switch == 3:             # LP all constraints
             from algorithms.LP_all_constraints import linear_prog_method
-            chosen_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'])
+            linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'])
 
+        if switch == -1:
+            from algorithms.heuristic_version_2 import heuristic_2
+            from algorithms.LP_all_constraints import linear_prog_method
+            mod = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False)
+            heuristic_2(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], mod)
         try:
             plot(FILES)
         except:
