@@ -1,4 +1,5 @@
 from NetworkModels.ConstarintGraph import ConstraintGraph
+from algorithms.algoritmhs_helper_functions import compare_chosen_edges
 from libs.Wrappers.PathPlanner import PathPlanner
 
 from algorithms import helper_functions as func
@@ -59,8 +60,15 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
 
         for subs in i_subsets:
             PP.calculate_r_detour(pi, pg, subs)
-            MODEL += mip.xsum([X[k] for k in subs]) <= PP.getCost()
-            CL[c_index] = (pnodes, PP.getPath())
+            pp_cost = PP.getCost()
+            pp_path = PP.getPath()
+
+            d["path"] = pp_path
+            d["cost"] = pp_cost
+            d["ids"] = set(ids)
+
+            MODEL += mip.xsum([X[k] for k in subs]) <= pp_cost
+            CL[c_index] = (pnodes, pp_path)
             c_index += 1
 
     logging.debug('Constraint graph updated from BPD.')
@@ -95,16 +103,6 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
     l_out.write_paths("{}/{}".format(g_r_path, "lp_paths.txt"), chosen_edges)
 
     logging.debug(" ## Comparing LP solution to actual lower bound:")
-    a_sum = 0  # actual sum
-    for edge, path, cost, zones in chosen_edges:
-        a_sum += cost
-        lower_bound = sum([MODEL.vars[z_id].x for z_id in zones])
-        logging.info(f'ids: {[z for z in zones]}')
-        logging.info(f'compare done for edge {edge}. LB: {lower_bound} AC: {cost} .. diff: {cost - lower_bound} '
-                     f'(+{100 * (cost - lower_bound) / lower_bound}%)')
-
-    lb_sum = sum([MODEL.vars[i].x for i in range(0, len(DZL))])  # lower bound sum
-    logging.info(f'In total: LB: {lb_sum}, AC: {a_sum} .. diff: {a_sum - lb_sum} (+{100 * (a_sum - lb_sum) / lb_sum}%)')
+    compare_chosen_edges(chosen_edges, DZL, MODEL)
 
     return MODEL, chosen_edges
-    #return chosen_edges

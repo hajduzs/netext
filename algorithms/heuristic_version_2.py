@@ -1,4 +1,5 @@
 from algorithms import helper_functions as func
+from algorithms.algoritmhs_helper_functions import compare_chosen_edges
 from libs.Wrappers.PathPlanner import PathPlanner
 import logging
 import Utilities.Writer as l_out
@@ -10,44 +11,8 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R, g_r_path, compare_model=None):
     logging.debug('-- Beginning HEURISTIC method.')
     start_time = time.time()
 
-    PP = PathPlanner()
-    PP.setR(R)
-
-    # load danger zones into the path planner
-    for dz in DZL:
-        PP.addDangerZone(dz.string_poly)
-
-    for n, d in BPD.graph.nodes(data=True):
-
-        if d["bipartite"] == 1:
-            continue
-
-            # get ccordinates
-        pnodes = d["vrtx"].edge
-        pi = func.get_coords_for_node(pnodes[0], TOPOLOGY)
-        pg = func.get_coords_for_node(pnodes[1], TOPOLOGY)
-
-        # get adjacent danger zones
-        neigh_cuts = [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v)]
-        d["neigh"] = len(neigh_cuts)
-        ids = set()
-        for c in neigh_cuts:
-            ids.update(BPD.return_ids_for_cut(c))
-        ids = list(ids)
-
-        # calculate cost
-        PP.calculate_r_detour(pi, pg, ids)
-        cost = PP.getCost()
-        path = PP.getPath()
-
-        # update node
-        d["path"] = path
-        d["cost"] = cost
-        d["ids"] = set(ids)
-
-    logging.debug('BPD loaded with costs.')
-    logging.debug(f'Time needed: {time.time() - start_time}')
-    start_time = time.time()
+    # HEUR step 1 (if done alone)
+    # code MIGRATED to old_code.
 
     # HEUR STEP 2: get minimum edge cover
     H = BPD.graph.copy()
@@ -171,16 +136,6 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R, g_r_path, compare_model=None):
     logging.debug(" ## Comparing HEURISTIC solution to actual lower bound:")
 
     if compare_model is not None:
-        a_sum = 0  # actual sum
-        for edge, path, cost, zones in chosen_edges:
-            a_sum += cost
-            lower_bound = sum([compare_model.vars[z_id].x for z_id in zones])
-            logging.info(f'ids: {[z for z in zones]}')
-            logging.info(f'compare done for edge {edge}. LB: {lower_bound} AC: {cost} .. diff: {cost - lower_bound} '
-                         f'(+{100 * (cost - lower_bound) / lower_bound}%)')
-
-        lb_sum = sum([compare_model.vars[i].x for i in range(0, len(DZL))])  # lower bound sum
-        logging.info(
-            f'In total: LB: {lb_sum}, AC: {a_sum} .. diff: {a_sum - lb_sum} (+{100 * (a_sum - lb_sum) / lb_sum}%)')
+        compare_chosen_edges(chosen_edges, DZL, compare_model)
 
     return chosen_edges

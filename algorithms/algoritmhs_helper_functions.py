@@ -21,6 +21,22 @@ def get_ids_to_avoid(n, d, BPD, TOPOLOGY):
         ids.update(BPD.return_ids_for_cut(c))
     return list(ids)
 
+def compare_chosen_edges(chosen_edges, DZL, MODEL):
+    a_sum = 0  # actual sum
+    for edge, path, cost, zones in chosen_edges:
+        a_sum += cost
+        lower_bound = sum([MODEL.vars[z_id].x for z_id in zones])
+        logging.info(f'ids: {[z for z in zones]}')
+        logging.info(f'compare done for edge {edge}. LB: {lower_bound} AC: {cost} .. diff: {cost - lower_bound} '
+                     f'(+{100 * (cost - lower_bound) / lower_bound}%)')
+
+    lb_sum = sum([MODEL.vars[i].x for i in range(0, len(DZL))])  # lower bound sum
+    if lb_sum != 0:
+        change = 100 * (a_sum - lb_sum) / lb_sum
+    else:
+        change = -1
+    logging.info(f'In total: LB: {lb_sum}, AC: {a_sum} .. diff: {a_sum - lb_sum} (+{change}%)')
+
 
 def compare_chosen(chosen_edges, TOPOLOGY, R, method):
     logging.debug(f' ## Comparing {method} edges:')
