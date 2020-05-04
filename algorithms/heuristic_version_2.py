@@ -6,7 +6,7 @@ import Utilities.Writer as l_out
 import time
 
 
-def heuristic_2(TOPOLOGY, DZL, BPD, R, g_r_path, compare_model=None):
+def heuristic_2(TOPOLOGY, DZL, BPD, R, g_r_path, PP, compare_model=None):
 
     logging.debug('-- Beginning HEURISTIC method.')
     start_time = time.time()

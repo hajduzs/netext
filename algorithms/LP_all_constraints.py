@@ -105,4 +105,4 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
     logging.debug(" ## Comparing LP solution to actual lower bound:")
     compare_chosen_edges(chosen_edges, DZL, MODEL)
 
-    return MODEL, chosen_edges
+    return MODEL, PP, chosen_edges

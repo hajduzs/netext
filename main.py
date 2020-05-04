@@ -98,10 +98,10 @@ for g in func.load_graph_names(FILES):
         if switch == -1:
             from algorithms.heuristic_version_2 import heuristic_2
             from algorithms.LP_all_constraints import linear_prog_method
-            mod, lp_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False)
+            mod, pp, lp_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False)
             compare_chosen(lp_edges, TOPOLOGY, R, "LP")
             logging.info("-")
-            he_edges = heuristic_2(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], mod)
+            he_edges = heuristic_2(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], pp, mod)
             compare_chosen(he_edges, TOPOLOGY, R, "HEUR")
 
         try:
