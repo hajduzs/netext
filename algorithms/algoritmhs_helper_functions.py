@@ -27,14 +27,20 @@ def compare_chosen_edges(chosen_edges, DZL, MODEL):
         a_sum += cost
         lower_bound = sum([MODEL.vars[z_id].x for z_id in zones])
         logging.info(f'ids: {[z for z in zones]}')
+        if lower_bound != 0:
+            difference = 100 * (cost - lower_bound) / lower_bound
+        else:
+            difference = "ERR"
+            logging.warning("0 lower bound!")
         logging.info(f'compare done for edge {edge}. LB: {lower_bound} AC: {cost} .. diff: {cost - lower_bound} '
-                     f'(+{100 * (cost - lower_bound) / lower_bound}%)')
+                     f'(+{difference}%)')
 
     lb_sum = sum([MODEL.vars[i].x for i in range(0, len(DZL))])  # lower bound sum
     if lb_sum != 0:
         change = 100 * (a_sum - lb_sum) / lb_sum
     else:
-        change = -1
+        logging.warning("0 LB sum!")
+        change = "ERR"
     logging.info(f'In total: LB: {lb_sum}, AC: {a_sum} .. diff: {a_sum - lb_sum} (+{change}%)')
 
 
