@@ -6,7 +6,7 @@ from NetworkModels.DangerZones import DangerZoneList
 from NetworkModels.DisasterCuts import CutList
 from NetworkModels.BipartiteGraph import BipartiteDisasterGraph
 from Utilities.Plotting import plot
-from libs.Wrappers.PlanarDivider import get_division_from_json
+from libs.Wrappers.PlanarDividerOld import get_division_from_json
 import os
 import sys
 import shutil
@@ -18,8 +18,9 @@ import math
 
 DEBUG_MODE = False
 
-GAMMA = 2 / math.sqrt(3)    # anything wider than 120° will be ignored
+GAMMA = 1.1    # anything wider than 120° will be ignored
 FILES = {}
+
 
 # paths
 if len(sys.argv) > 1 and DEBUG_MODE is False:
@@ -49,7 +50,7 @@ for g in func.load_graph_names(FILES):
     func.append_data_with_edge_chains(TOPOLOGY)
 
     R_values = [BOUNDING_BOX['small_side'] * scale / 100 for scale in range(5, 16)]
-    for R in [R_values[0], R_values[3],  R_values[6],  R_values[10]]:
+    for R in [R_values[0]]: #, R_values[3],  R_values[6],  R_values[10]]:
 
         func.create_r_output_directory(FILES, R)
 
@@ -59,7 +60,7 @@ for g in func.load_graph_names(FILES):
 
         faces = get_division_from_json(R, FILES['js_name'], "{}/faces.txt".format(FILES['g_r_path_data']))
         if faces is None:
-            print("something went awfully wrong, im sorry. (could not calculate faces properly)")
+            logging.critical("Could not calculate faces - continuing.")
             continue
         DZL = DangerZoneList(TOPOLOGY, R, GAMMA, faces)
         l_out.write_dangerzones("{}/{}".format(FILES['g_r_path_data'], "zones.txt"), DZL)

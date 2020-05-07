@@ -4,11 +4,14 @@ from NetworkModels.DisasterCuts import DisasterCut
 from Utilities.HitDetection import hit_graph_with_disaster, is_face_valid_dangerzone
 import shapely.geometry as geom
 from algorithms.helper_functions import destringify_points
+import logging
+import random
 
 
 def reset_counter():
     DangerZone.id = 0
     DisasterCut.id = 0
+    DangerZoneList.omit_count = 0
 
 
 class DangerZone:
@@ -51,6 +54,7 @@ class DangerZone:
 class DangerZoneList:
 
     def __init__(self, topology, r, gamma, faces):
+        self.omit_count = 0
         self.dangerZones = []
         self.load_dangerzones(topology, r, gamma, faces)
         reset_counter()
@@ -82,21 +86,30 @@ class DangerZoneList:
 
             poly = geom.Polygon(points)
 
-            if poly.is_empty:  # ignore really small and degenetate polygons
+            if poly.is_empty:  # ignore really small and degenerate polygons
                 continue
 
-            if not poly.is_valid:
-                poly = poly.buffer(0)
-                if poly.is_empty:
-                    continue
+            if False:
+                if not poly.is_valid:
+                    poly = poly.buffer(0)
+                    if poly.is_empty:
+                        continue
 
-            p = poly.representative_point()
+                p = poly.representative_point()
+            else:
+                minx, miny, maxx, maxy = poly.bounds
+                while True:
+                    p = geom.Point(random.uniform(minx, maxx), random.uniform(miny, maxy))
+                    if poly.contains(p):
+                        break
 
             G = hit_graph_with_disaster(topology, r, (p.x, p.y))
 
-            if is_face_valid_dangerzone(gamma, poly, r, G):
+            if is_face_valid_dangerzone(gamma, poly, r, G, self):
                 dz = DangerZone(G, face)
                 self.add_danger_zone(dz)
+
+        logging.info(f'{self.omit_count} danger zones omitted from a total od {len(faces)}')
 
     def generate_disaster_cuts(self):
         cuts = []

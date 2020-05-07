@@ -40,6 +40,7 @@ void print_ccb (Arrangement_2::Ccb_halfedge_const_circulator circ, std::ofstream
 
 void print_arrangement (const Arrangement_2& arr, std::ofstream& file)
 {
+  file << arr.number_of_faces() << std::endl;
   Arrangement_2::Face_const_iterator fit;
   for (fit = arr.faces_begin(); fit != arr.faces_end(); ++fit)
   {
@@ -76,7 +77,8 @@ int find_node_index(json& graph, std::string id)
   return -1;
 }
 
-extern "C" { int divide(int CIRCLE_RESOLUTION, float DISASTER_R, char* ipath, char* opath)
+//extern "C" {
+int divide(int CIRCLE_RESOLUTION, float DISASTER_R, char* ipath, char* opath)
 {
   std::ifstream file(ipath);
   std::ofstream fileo;
@@ -164,11 +166,11 @@ extern "C" { int divide(int CIRCLE_RESOLUTION, float DISASTER_R, char* ipath, ch
   print_arrangement(arr, fileo);
   fileo.close();
   return 0;
-}}
+}
 
 int main(int argc, char **argv)
 {
-  return 0;
+  return divide(atoi(argv[1]), atof(argv[2]), argv[3], argv[4]);
 }
 
 

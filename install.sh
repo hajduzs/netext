@@ -47,4 +47,5 @@ cp ../../libs/sources/CMakeLists.txt ./CMakeLists.txt
 cmake .
 make
 
-cp libpartition.so ../../libs/libpartition.so
+# cp libpartition.so ../../libs/libpartition.so
+cp dangerzone ../../libs/partitioner.x

@@ -2,6 +2,7 @@ import networkx as nx
 import json
 import os
 import logging
+import math
 
 from algorithms.graph_reading import generate_json_from_graphml, generate_json_from_lgf, \
     generate_json_from_lgfll, generate_json_from_ggml, generate_json_from_gml
@@ -120,3 +121,4 @@ def stringify_points(points):
         ret += str(p[0]) + " " + str(p[1]) + "  "
     ret = ret.rstrip()
     return ret
+

@@ -1,6 +1,7 @@
 import networkx as nx
 
 from math import sqrt
+
 from Utilities.Geometry2D import point_to_point, point_to_line, normal_vector
 from algorithms import helper_functions as func
 
@@ -72,13 +73,12 @@ Ok, I feel like this needs an explanation.
 # TODO: clean up this unholy abomination
 
 
-def is_face_valid_dangerzone(gamma, poly, r, graph):
+def is_face_valid_dangerzone(gamma, poly, r, graph, dzl):
     valid = False
     if not nx.is_connected(graph):
         # remove later
-        return True
+        # return True
         if nx.number_connected_components(graph) == 2:
-            xd = nx.connected_components(graph)
             cl = [c for c in nx.connected_components(graph) if len(c) == 1]
             if len(cl) != 0:
                 c = cl[0].pop()
@@ -88,7 +88,9 @@ def is_face_valid_dangerzone(gamma, poly, r, graph):
                     t = point_to_point(sp, (x, y))
                     if t > r * gamma:
                         valid = True
+                        dzl.omit_count -= 1
                         break
+                dzl.omit_count += 1
             else:
                 valid = True
         else:

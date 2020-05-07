@@ -41,8 +41,8 @@ endif()
 
 include( CGAL_CreateSingleSourceCGALProgram )
 
-#create_single_source_cgal_program( "dangerzone.cpp" )
+create_single_source_cgal_program( "dangerzone.cpp" )
 
-add_library(partition SHARED dangerzone.cpp)
+#add_library(partition SHARED dangerzone.cpp)
 
 

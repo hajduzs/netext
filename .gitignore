@@ -4,3 +4,4 @@ plots/
 output/
 work/
 venv/
+build/
