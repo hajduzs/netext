@@ -50,7 +50,7 @@ for g in func.load_graph_names(FILES):
     func.append_data_with_edge_chains(TOPOLOGY)
 
     R_values = [BOUNDING_BOX['small_side'] * scale / 100 for scale in range(5, 16)]
-    for R in [R_values[0], R_values[3],  R_values[6],  R_values[10]]:
+    for R in [R_values[0], R_values[5]]: #,  R_values[6],  R_values[10]]:
 
         func.create_r_output_directory(FILES, R)
 
