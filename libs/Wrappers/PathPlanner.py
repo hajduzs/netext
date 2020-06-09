@@ -29,7 +29,7 @@ class PathPlanner(c_void_p):
     # polydata MUST be a string
     def addDangerZone(self, polydata: str):
         lib.PP_addDangerZone(self.obj, polydata.encode())
-        logging.debug(f'Added Danger Zone: [ {polydata} ]')
+        # logging.debug(f'Added Danger Zone: [ {polydata} ]')
 
     # ids MUST be a list/tuple of integers
     def setDangerZones(self, ids):
@@ -39,38 +39,38 @@ class PathPlanner(c_void_p):
                 p[i] = c_int(ids[i])
 
         lib.PP_setDangerZones(self.obj, p, n)
-        logging.debug(f'Set Danger Zones:  {ids}')
+        # logging.debug(f'Set Danger Zones:  {ids}')
 
     def calculatePath(self):
         lib.PP_calculatePath(self.obj)
-        logging.debug('Called calculatepath')
+        # logging.debug('Called calculatepath')
 
     def getPath(self):
         ret = c_char_p(lib.PP_getPath(self.obj)).value.decode('utf-8').rstrip(f'  ')
-        logging.debug(f'Called getPath. path: [ {ret} ]')
+        # logging.debug(f'Called getPath. path: [ {ret} ]')
         return ret
 
     def getCost(self):
         c = lib.PP_getCost(self.obj)
-        logging.debug(f'Called getCost. cost: [ {c} ]')
+        # logging.debug(f'Called getCost. cost: [ {c} ]')
         return c
 
     def getEpsilon(self):
         e = lib.PP_getEpsilon(self.obj)
-        logging.debug(f'Called getEpsilon. eps: [ {e} ]')
+        # logging.debug(f'Called getEpsilon. eps: [ {e} ]')
         return e
 
     def setR(self, R):
         lib.PP_setR(self.obj, c_float(R))
-        logging.debug(f'Set R: {R}')
+        # logging.debug(f'Set R: {R}')
 
     def setStartPoint(self, x: float, y: float):
         lib.PP_setStartPoint(self.obj, c_float(x), c_float(y))
-        logging.debug(f'Set starting point: ({x},{y})')
+        # logging.debug(f'Set starting point: ({x},{y})')
     
     def setEndPoint(self, x: float, y: float):
         lib.PP_setEndPoint(self.obj, c_float(x), c_float(y))
-        logging.debug(f'Set ending point: ({x},{y})')
+        # logging.debug(f'Set ending point: ({x},{y})')
 
     def calculate_r_detour(self, pi, pg, ids):
         self.setStartPoint(pi[0], pi[1])
