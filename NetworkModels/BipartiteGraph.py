@@ -49,10 +49,12 @@ class EdgeVertex:
 
 class BipartiteDisasterGraph:
 
-    def __init__(self, cut_list):
+    def __init__(self, cut_list, topology):
+        self.topology = topology
         self.Cuts = cut_list
         self.Edges = cut_list.return_all_protecting_edges()
         self.graph = self.load_graph()
+
 
     def return_nodes_for_edge(self, edge_name):
         for e in self.Edges:
@@ -77,7 +79,7 @@ class BipartiteDisasterGraph:
 
         for e in self.Edges:
             for c in self.Cuts:
-                if e in c.return_protecting_edges():
+                if e in c.return_protecting_edges(self.topology):
                     G.add_edge(e.name, c.get_name(), weight=0, cost=0, valid=0, path=None)
         return G
 

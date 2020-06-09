@@ -14,6 +14,8 @@ cd build
 
 git clone https://bitbucket.org/mkallmann/sig
 sed '12s/$/ -fPIC/' sig/make/makefile > mf2.txt
+# TODO: a method has defaults in header, thus a lib is not compiling.
+# fix this issue, because pull requests are not permitted
 mv mf2.txt sig/make/makefile
 
 cd sig/make

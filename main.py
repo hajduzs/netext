@@ -18,7 +18,7 @@ import math
 
 DEBUG_MODE = False
 
-GAMMA = 1.1    # anything wider than 120° will be ignored
+GAMMA = 1.1    # anything wider than 120° will be ignored TODO: function to convert degrees to gamma
 FILES = {}
 
 
@@ -28,7 +28,7 @@ if len(sys.argv) > 1 and DEBUG_MODE is False:
 else:
     if os.path.exists("output"):
         shutil.rmtree("output")
-    FILES['input_dir'] = "graphs/debug/"
+    FILES['input_dir'] = "graphs/tests/"
 
 if not os.path.exists("output"):
     os.mkdir("output")
@@ -50,7 +50,8 @@ for g in func.load_graph_names(FILES):
     func.append_data_with_edge_chains(TOPOLOGY)
 
     R_values = [BOUNDING_BOX['small_side'] * scale / 100 for scale in range(5, 16)]
-    for R in [R_values[0], R_values[5]]: #,  R_values[6],  R_values[10]]:
+    # TODO: R 0 lesz, ha pl y koordináta csak egy van.
+    for R in [50]:
 
         func.create_r_output_directory(FILES, R)
 
@@ -73,7 +74,9 @@ for g in func.load_graph_names(FILES):
             logging.warning("We do not continue further, as there are too many danger zones.")
             continue
 
-        BPD = BipartiteDisasterGraph(CutList(DZL))
+        func.append_topology_with_repeaters(TOPOLOGY, 10)
+
+        BPD = BipartiteDisasterGraph(CutList(DZL, TOPOLOGY), TOPOLOGY)
 
         # now we can choose the method
 

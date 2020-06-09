@@ -1,4 +1,4 @@
-from math import sqrt, acos
+from math import sqrt, atan2, pi
 
 # Every parameter here is a two-tuple of real numbers.
 # "p" is for points, "v" is for vectors.
@@ -7,7 +7,7 @@ from math import sqrt, acos
 
 
 def direction_vector(p1, p2):
-    return p1[0] - p2[0], p1[1] - p2[1]
+    return p2[0] - p1[0], p2[1] - p1[1]
 
 
 def length(v):
@@ -31,7 +31,11 @@ def cross_product(v1, v2):
 
 
 def angle_between(v1, v2):
-    return acos(cross_product(v1, v2)/(length(v1)*length(v2)))
+    v = direction_vector(v1, v2)
+    a = atan2(v[1], v[0])
+    if a < 0:
+        a = 2 * pi + a
+    return a
 
 
 def point_to_point(p1, p2):

@@ -1,7 +1,12 @@
 from NetworkModels.BipartiteGraph import EdgeVertex
+from algorithms.helper_functions import get_connetion_points_from_node_set
+
 
 def reset_counter():
     DisasterCut.id = 0
+
+
+REPEATERS = True
 
 
 class DisasterCut:
@@ -30,8 +35,14 @@ class DisasterCut:
     def return_danger_zone_ids(self):
         return self.dangerZones
 
-    def return_protecting_edges(self):
-        return [EdgeVertex((a, b)) for a in self.nodeSets[0] for b in self.nodeSets[1]]
+    def return_protecting_edges(self, topology, repeaters=REPEATERS):
+        if repeaters:
+            n_a = get_connetion_points_from_node_set(topology, self.nodeSets[0])
+            n_b = get_connetion_points_from_node_set(topology, self.nodeSets[1])
+        else:
+            n_a = self.nodeSets[0]
+            n_b = self.nodeSets[1]
+        return [EdgeVertex((a, b)) for a in n_a for b in n_b]
 
     def __str__(self):
         s = "-- Disaster Cut --\n"
@@ -42,10 +53,11 @@ class DisasterCut:
 
 
 class CutList:
-    def __init__(self, DZL):
+    def __init__(self, DZL, topology):
         self.cutList = []
         for cut in DZL.generate_disaster_cuts():
             self.add_disaster_cut(cut)
+        self.topology = topology
 
     def get_cut_count(self):
         return len(self.cutList)
@@ -66,7 +78,7 @@ class CutList:
     def return_all_protecting_edges(self):
         vertices = set()
         for cut in self.cutList:
-            vertices.update(cut.return_protecting_edges())
+            vertices.update(cut.return_protecting_edges(self.topology))
         l = list(vertices)
         l.sort()
         return l

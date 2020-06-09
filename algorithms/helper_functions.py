@@ -3,7 +3,9 @@ import json
 import os
 import logging
 import math
+import itertools
 
+import Utilities.Geometry2D as geom
 from algorithms.graph_reading import generate_json_from_graphml, generate_json_from_lgf, \
     generate_json_from_lgfll, generate_json_from_ggml, generate_json_from_gml
 
@@ -92,7 +94,71 @@ def calculate_bounding_box(graph, r=0, epsilon=0):
 
 
 def get_coords_for_node(node, graph):
-    return graph.nodes[node]['coords']
+    if node[:3] != "rep":
+        return graph.nodes[node]['coords']
+    else:
+        d = node.split("-")   # [[e1, e2],id]
+        en = d[0].split("_")
+        e1 = en[0][3:]
+        e2 = en[1]
+        id = int(d[1])
+        return graph[e1][e2]['repeaters'][id][1]
+
+
+def get_repeaters_from_edge_list(topology, edgelist):
+    rep = []
+    for a, b in edgelist:
+        rep.extend([r[0] for r in topology[a][b]['repeaters']])
+    for r in rep:
+        print(r)
+    return rep
+
+
+def get_live_edges_from_set(topology, nodeset):
+    combinations = itertools.combinations(nodeset, 2)
+    ret = []
+    for c in combinations:
+        if topology.has_edge(*c):
+            ret.append(c)
+    return ret
+
+
+def get_connetion_points_from_node_set(topology, nodeset):
+    rep = get_repeaters_from_edge_list(topology,get_live_edges_from_set(topology, nodeset))
+    rep.extend(nodeset)
+    return rep
+
+
+def append_topology_with_repeaters(topology, distance):
+    tiny = float(10 ** -10)
+    for a, b, data in topology.edges(data=True):
+        p1 = data['points'][0]
+        p2 = data['points'][1]
+        alpha = geom.angle_between(p1, p2)
+        diff_x = distance * math.cos(alpha)
+        diff_y = distance * math.sin(alpha)
+        if abs(diff_x) < tiny:
+            diff_x = 0
+        if abs(diff_y) < tiny:
+            diff_y = 0
+        if (diff_x, diff_y) == (0, 0):
+            continue
+
+        new_points = []
+        td_x = p2[0] - p1[0]
+        td_y = p2[1] - p1[1]
+        if diff_x == 0:
+            it_x = float('inf')
+        else:
+            it_x = abs(td_x / diff_x)
+        if diff_y == 0:
+            it_y = float('inf')
+        else:
+            it_y = abs(td_y / diff_y)
+        number_iterations = math.floor(min(it_x, it_y))
+        for i in range(1, number_iterations):
+            new_points.append((f'rep{a}_{b}-{i-1}', (p1[0] + diff_x * i, p1[1] + diff_y * i)))
+        data['repeaters'] = new_points
 
 
 def append_data_with_edge_chains(graph):

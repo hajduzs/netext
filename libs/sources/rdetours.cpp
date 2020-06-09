@@ -58,6 +58,11 @@ public:
 
 	void CalculatePath()
     {
+        for(int i = 0; i < obstacles->size(); i++)
+        {
+            std::cout << obstacles[i]
+        }
+
 		GsVisGraph _vg;                 // The visual graph we use for path planning
 
 		float dang = GS_TORAD(3);       // Circle resolution parameter of the visual graph
