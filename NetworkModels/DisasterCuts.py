@@ -6,7 +6,7 @@ def reset_counter():
     DisasterCut.id = 0
 
 
-REPEATERS = True
+REPEATERS = False
 
 
 class DisasterCut:

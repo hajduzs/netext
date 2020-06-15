@@ -15,6 +15,7 @@ import logging
 # GLOBAL VARIABLES
 import math
 
+# TODO! : solutions are broken, LP and HEUR protects only danger zones, not cuts!
 
 DEBUG_MODE = False
 
@@ -51,7 +52,7 @@ for g in func.load_graph_names(FILES):
 
     R_values = [BOUNDING_BOX['small_side'] * scale / 100 for scale in range(5, 16)]
     # TODO: R 0 lesz, ha pl y koordináta csak egy van.
-    for R in [50]:
+    for R in [60]:
 
         func.create_r_output_directory(FILES, R)
 
@@ -63,6 +64,7 @@ for g in func.load_graph_names(FILES):
         if faces is None:
             logging.critical("Could not calculate faces - continuing.")
             continue
+        #faces = faces[3:4]
         DZL = DangerZoneList(TOPOLOGY, R, GAMMA, faces)
         l_out.write_dangerzones("{}/{}".format(FILES['g_r_path_data'], "zones.txt"), DZL)
 
@@ -83,6 +85,8 @@ for g in func.load_graph_names(FILES):
         chosen_edges = None
         switch = -1
 
+        R -= R * 0.09
+
         if switch == 0:             # Original heuristic (v2)
             from algorithms.heuristic_version_2 import heuristic_2
             heuristic_2(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'])
@@ -102,7 +106,7 @@ for g in func.load_graph_names(FILES):
         if switch == -1:
             from algorithms.heuristic_version_2 import heuristic_2
             from algorithms.LP_all_constraints import linear_prog_method
-            mod, pp, lp_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=False)
+            mod, pp, lp_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=True)
             compare_chosen(lp_edges, TOPOLOGY, R, "LP")
             logging.info("-")
             he_edges = heuristic_2(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], pp, mod)

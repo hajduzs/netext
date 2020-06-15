@@ -94,9 +94,9 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
 
     # TODO: ide kell beszúrni, ha egy constr nem =re teljesül MODEL += <i_subs>
 
-    CG = ConstraintGraph(MODEL.constrs)
+    CG = ConstraintGraph(MODEL.constrs) #(BPD, DZL) #(MODEL.constrs)
 
-    CG.print_data()
+    #CG.print_data()
 
     chosen_edges = CG.optimize(CL)
 

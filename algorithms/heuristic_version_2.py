@@ -43,77 +43,77 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R, g_r_path, PP, compare_model=None):
     # HEUR STEP 3: OPTIMIZING ON THESE NEW EDGES
 
     # get every danger zone that is avoided by two or more edges
+    if True:
+        multiples = set()
+        for i in range(0, len(nodes)):
+            for j in range(i + 1, len(nodes)):
+                multiples.update(nodes[i][1]["ids"].intersection(nodes[j][1]["ids"]))
 
-    multiples = set()
-    for i in range(0, len(nodes)):
-        for j in range(i + 1, len(nodes)):
-            multiples.update(nodes[i][1]["ids"].intersection(nodes[j][1]["ids"]))
+        rep_count = 0
+        for Z in multiples:
+            # get corresponding edges
+            corr = [n for n in nodes if Z in n[1]["ids"]]
+            rep_count += len(corr) - 1
+            # set theoretical new edge cost and path for all (not containing Z)
+            for n, d in corr:
+                # get coordinates
+                pnodes = d["vrtx"].edge
+                pi = func.get_coords_for_node(pnodes[0], TOPOLOGY)
+                pg = func.get_coords_for_node(pnodes[1], TOPOLOGY)
 
-    rep_count = 0
-    for Z in multiples:
-        # get corresponding edges
-        corr = [n for n in nodes if Z in n[1]["ids"]]
-        rep_count += len(corr) - 1
-        # set theoretical new edge cost and path for all (not containing Z)
-        for n, d in corr:
-            # get coordinates
-            pnodes = d["vrtx"].edge
-            pi = func.get_coords_for_node(pnodes[0], TOPOLOGY)
-            pg = func.get_coords_for_node(pnodes[1], TOPOLOGY)
+                # get adjacent danger zones
+                neigh_cuts = [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v)]
+                ids = set()
+                no_removal = True
+                for c in neigh_cuts:
+                    ids.update(BPD.return_ids_for_cut(c))
+                    if Z in ids:
+                        ids.remove(Z)
+                        no_removal = False
+                if no_removal:
+                    break
+                ids = list(ids)
 
-            # get adjacent danger zones
-            neigh_cuts = [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v)]
-            ids = set()
-            no_removal = True
-            for c in neigh_cuts:
-                ids.update(BPD.return_ids_for_cut(c))
-                if Z in ids:
-                    ids.remove(Z)
-                    no_removal = False
-            if no_removal:
-                break
-            ids = list(ids)
+                # calculate cost
+                PP.calculate_r_detour(pi, pg, ids)
+                cost = PP.getCost()
+                path = PP.getPath()
 
-            # calculate cost
-            PP.calculate_r_detour(pi, pg, ids)
-            cost = PP.getCost()
-            path = PP.getPath()
+                # update node
+                d["t_path"] = path
+                d["t_cost"] = cost
+                d["t_ids"] = set(ids)
 
-            # update node
-            d["t_path"] = path
-            d["t_cost"] = cost
-            d["t_ids"] = set(ids)
+                print("{} {}".format(n, (d["cost"], d["ids"])))
+                print("{} {}".format(n, (d["t_cost"], d["t_ids"])))
+                print("diff: {}".format(d["cost"] - d["t_cost"]))
 
-            print("{} {}".format(n, (d["cost"], d["ids"])))
-            print("{} {}".format(n, (d["t_cost"], d["t_ids"])))
-            print("diff: {}".format(d["cost"] - d["t_cost"]))
+            min_n = 0
+            # select minimal cost edge
+            mincost = float("inf")
+            for n, d in corr:
+                if mincost > d["cost"] - d["t_cost"]:
+                    mincost = d["cost"] - d["t_cost"]
+                    min_n = n
 
-        min_n = 0
-        # select minimal cost edge
-        mincost = float("inf")
-        for n, d in corr:
-            if mincost > d["cost"] - d["t_cost"]:
-                mincost = d["cost"] - d["t_cost"]
-                min_n = n
+            # set that in the graph
+            for n, d in corr:
+                if n == min_n:
+                    continue
+                BPD.graph.nodes[n]["cost"] = d["t_cost"]
+                BPD.graph.nodes[n]["path"] = d["t_path"]
+                BPD.graph.nodes[n]["ids"] = d["t_ids"]
 
-        # set that in the graph
-        for n, d in corr:
-            if n == min_n:
-                continue
-            BPD.graph.nodes[n]["cost"] = d["t_cost"]
-            BPD.graph.nodes[n]["path"] = d["t_path"]
-            BPD.graph.nodes[n]["ids"] = d["t_ids"]
+            # delete other edges
+            for n, d in corr:
+                if n == min_n:
+                    continue
+                for v in [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v) and Z in BPD.return_ids_for_cut(v)]:
+                    BPD.graph.remove_edge(n, v)
 
-        # delete other edges
-        for n, d in corr:
-            if n == min_n:
-                continue
-            for v in [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v) and Z in BPD.return_ids_for_cut(v)]:
-                BPD.graph.remove_edge(n, v)
-
-    logging.debug(f'Optimized on chosen edges. Multiples: ({len(multiples)}), opt: ({rep_count})')
-    logging.debug(f'Time needed: {time.time() - start_time}')
-    start_time = time.time()
+        logging.debug(f'Optimized on chosen edges. Multiples: ({len(multiples)}), opt: ({rep_count})')
+        logging.debug(f'Time needed: {time.time() - start_time}')
+        start_time = time.time()
 
     # 4. AFTERWORK: only the selected edges (nodes) need to be in the graph.
 
