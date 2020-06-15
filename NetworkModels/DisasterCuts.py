@@ -84,6 +84,19 @@ class CutList:
         l.sort()
         return l
 
+    def indexOf(self, item):
+        for i in range(0, len(self.cutList)):
+            if self.cutList[i].id == int(item[1:]):
+                return i
+        raise Exception("cut doesnt exist")
+
+
+    def __len__(self):
+        return len(self.cutList)
+
+    def __getitem__(self, item):
+        return self.cutList[item]
+
     def __str__(self):
         s = "-- DISASTER CUTS --\n"
         for c in self.cutList:

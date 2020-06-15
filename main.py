@@ -78,7 +78,8 @@ for g in func.load_graph_names(FILES):
 
         func.append_topology_with_repeaters(TOPOLOGY, 10)
 
-        BPD = BipartiteDisasterGraph(CutList(DZL, TOPOLOGY), TOPOLOGY)
+        CL = CutList(DZL, TOPOLOGY)
+        BPD = BipartiteDisasterGraph(CL, TOPOLOGY)
 
         BPD.plot("asd.png")
 
@@ -108,7 +109,7 @@ for g in func.load_graph_names(FILES):
         if switch == -1:
             from algorithms.heuristic_version_2 import heuristic_2
             from algorithms.LP_all_constraints import linear_prog_method
-            mod, pp, lp_edges = linear_prog_method(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], all_constr=True)
+            mod, pp, lp_edges = linear_prog_method(TOPOLOGY, DZL, CL, BPD, R, FILES['g_r_path_data'], all_constr=True)
             compare_chosen(lp_edges, TOPOLOGY, R, "LP")
             logging.info("-")
             he_edges = heuristic_2(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], pp, mod)

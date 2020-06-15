@@ -10,7 +10,7 @@ import itertools
 import time
 
 
-def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_it=False):
+def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, constr_it=False):
     # SET UP PATH PLANNER
 
     logging.debug(f' -- Beginning LP method. all_constr: {all_constr}')
@@ -25,7 +25,7 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
     # LP problem
 
     MODEL = mip.Model()
-    X = [MODEL.add_var(var_type=mip.CONTINUOUS) for i in range(0, len(DZL))]
+    X = [MODEL.add_var(var_type=mip.CONTINUOUS) for i in range(0, len(CLI))]
 
     # constraintek feltoltese
 
@@ -45,21 +45,21 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
         pg = func.get_coords_for_node(pnodes[1], TOPOLOGY)
 
         # get adjacent cuts
-        neigh_cuts = [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v)]
-        d["neigh"] = len(neigh_cuts)
-
-        ids = set()
-        for c in neigh_cuts:
-            ids.update(BPD.return_ids_for_cut(c))
-        ids = list(ids)
+        nc = [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v)]   # neighbouring cuts
+        d["neigh"] = len(nc)
 
         if all_constr:
-            i_subsets = itertools.chain.from_iterable(itertools.combinations(ids, r) for r in range(1, len(ids) + 1))
+            p_cuts = itertools.chain.from_iterable(itertools.combinations(nc, r) for r in range(1, len(nc) + 1))
         else:
-            i_subsets = [ids]
+            p_cuts = [nc]
 
-        for subs in i_subsets:
-            PP.calculate_r_detour(pi, pg, subs)
+        for cuts in p_cuts:
+            ids = set()
+            for c in cuts:
+                ids.update(BPD.return_ids_for_cut(c))
+            ids = list(ids)
+
+            PP.calculate_r_detour(pi, pg, ids)
             pp_cost = PP.getCost()
             pp_path = PP.getPath()
 
@@ -67,7 +67,7 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
             d["cost"] = pp_cost
             d["ids"] = set(ids)
 
-            MODEL += mip.xsum([X[k] for k in subs]) <= pp_cost
+            MODEL += mip.xsum([X[CLI.indexOf(k)] for k in cuts]) <= pp_cost
             CL[c_index] = (pnodes, pp_path)
             c_index += 1
 
@@ -105,6 +105,6 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
     l_out.write_paths("{}/{}".format(g_r_path, "lp_paths.txt"), chosen_edges)
 
     logging.debug(" ## Comparing LP solution to actual lower bound:")
-    compare_chosen_edges(chosen_edges, DZL, MODEL)
+    #compare_chosen_edges(chosen_edges, DZL, MODEL)
 
     return MODEL, PP, chosen_edges

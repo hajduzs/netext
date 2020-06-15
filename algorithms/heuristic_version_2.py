@@ -135,7 +135,7 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R, g_r_path, PP, compare_model=None):
 
     logging.debug(" ## Comparing HEURISTIC solution to actual lower bound:")
 
-    if compare_model is not None:
-        compare_chosen_edges(chosen_edges, DZL, compare_model)
+    #if compare_model is not None:
+        #compare_chosen_edges(chosen_edges, DZL, compare_model)
 
     return chosen_edges
