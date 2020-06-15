@@ -80,6 +80,8 @@ for g in func.load_graph_names(FILES):
 
         BPD = BipartiteDisasterGraph(CutList(DZL, TOPOLOGY), TOPOLOGY)
 
+        BPD.plot("asd.png")
+
         # now we can choose the method
 
         chosen_edges = None

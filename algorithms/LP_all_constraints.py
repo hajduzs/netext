@@ -22,7 +22,6 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
     for dz in DZL:
         PP.addDangerZone(dz.string_poly)
 
-    # TODO:
     # LP problem
 
     MODEL = mip.Model()
@@ -45,9 +44,10 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
         pi = func.get_coords_for_node(pnodes[0], TOPOLOGY)
         pg = func.get_coords_for_node(pnodes[1], TOPOLOGY)
 
-        # get adjacent danger zones
+        # get adjacent cuts
         neigh_cuts = [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v)]
         d["neigh"] = len(neigh_cuts)
+
         ids = set()
         for c in neigh_cuts:
             ids.update(BPD.return_ids_for_cut(c))
@@ -94,9 +94,11 @@ def linear_prog_method(TOPOLOGY, DZL, BPD, R, g_r_path, all_constr=True, constr_
 
     # TODO: ide kell beszúrni, ha egy constr nem =re teljesül MODEL += <i_subs>
 
+    MODEL.write("model.lp")
+
     CG = ConstraintGraph(MODEL.constrs) #(BPD, DZL) #(MODEL.constrs)
 
-    #CG.print_data()
+    CG.print_data()
 
     chosen_edges = CG.optimize(CL)
 

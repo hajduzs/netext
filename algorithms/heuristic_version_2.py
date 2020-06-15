@@ -43,7 +43,7 @@ def heuristic_2(TOPOLOGY, DZL, BPD, R, g_r_path, PP, compare_model=None):
     # HEUR STEP 3: OPTIMIZING ON THESE NEW EDGES
 
     # get every danger zone that is avoided by two or more edges
-    if True:
+    if False:
         multiples = set()
         for i in range(0, len(nodes)):
             for j in range(i + 1, len(nodes)):

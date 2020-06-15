@@ -9,7 +9,7 @@ class ConstraintGraph:
         self.G = nx.Graph()
 
         for constraint in c:
-            if constraint.slack == 0:
+            if constraint.slack < 0.001:
                 zones = [int(x.name[4:-1]) for x in constraint.expr.expr]
                 name = constraint.name
                 cost = -constraint.expr.const
@@ -22,7 +22,6 @@ class ConstraintGraph:
                 self.G.add_edges_from([(z, name) for z in zones])
 
     def print_data(self):
-        return
         logging.debug('Constraint graph data:')
         logging.debug("LHS nodes:")
         for n, d in self.G.nodes(data=True):
@@ -30,6 +29,7 @@ class ConstraintGraph:
                 logging.debug("{} <{}> : {}".format(n, [x for x in self.G.neighbors(n)],  d['cost']))
         logging.debug("RHS nodes:")
         logging.debug(f'{[n for n, d in self.G.nodes(data=True) if d["bipartite"] == 1]}')
+        logging.debug(f'{self.G.edges}')
 
     def LHS(self):
         return [(n, d) for n, d in self.G.nodes(data=True) if d["bipartite"] == 0]

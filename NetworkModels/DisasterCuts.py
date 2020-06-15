@@ -42,7 +42,8 @@ class DisasterCut:
         else:
             n_a = self.nodeSets[0]
             n_b = self.nodeSets[1]
-        return [EdgeVertex((a, b)) for a in n_a for b in n_b]
+        s = [EdgeVertex((a, b)) for a in n_a for b in n_b]
+        return s
 
     def __str__(self):
         s = "-- Disaster Cut --\n"

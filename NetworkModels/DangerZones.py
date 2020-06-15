@@ -40,7 +40,7 @@ class DangerZone:
             cuts.append(DisasterCut(self.id, [set0, set1]))
 
         # wont be needing this anymore
-        del self.graph
+        #del self.graph
 
         return cuts
 
