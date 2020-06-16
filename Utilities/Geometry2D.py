@@ -42,5 +42,9 @@ def point_to_point(p1, p2):
     return length(direction_vector(p1, p2))
 
 
+def point_to_line_signed(p, p0, n):
+    return cross_product(normalize(n), direction_vector(p, p0))
+
+
 def point_to_line(p, p0, n):
-    return abs(cross_product(normalize(n), direction_vector(p, p0)))
+    return abs(point_to_line_signed(p, p0, n))

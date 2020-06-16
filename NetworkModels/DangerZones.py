@@ -3,9 +3,9 @@ from NetworkModels.DisasterCuts import DisasterCut
 
 from Utilities.HitDetection import hit_graph_with_disaster, is_face_valid_dangerzone
 import shapely.geometry as geom
-from algorithms.helper_functions import destringify_points
+from algorithms.helper_functions import destringify_points, sample_point
 import logging
-import random
+
 
 
 def reset_counter():
@@ -97,11 +97,7 @@ class DangerZoneList:
 
                 p = poly.representative_point()
             else:
-                minx, miny, maxx, maxy = poly.bounds
-                while True:
-                    p = geom.Point(random.uniform(minx, maxx), random.uniform(miny, maxy))
-                    if poly.contains(p):
-                        break
+                p = sample_point(poly)
 
             G = hit_graph_with_disaster(topology, r, (p.x, p.y))
 

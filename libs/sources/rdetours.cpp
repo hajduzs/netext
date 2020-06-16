@@ -40,29 +40,29 @@ public:
 	{
 		GsPolygon& p = dangerZones.push();
 		p.setpoly(polydata);
+		std::cout << dangerZones.size() << " "<< polydata << std::endl;
 	}
 
 	void SetDangerZones(int* ids, int n)
 	{
+	    std::cout << "set: "<< n << "size: " << dangerZones.size() << std::endl;
 		//empty obstacles
 		obstacles = new GsPolygons();
 		obstacles->init();
 		obstacles->size(n);
 
 		//fill in with new polygons
-		for (int i = 0; i < n; i++){ obstacles->set(i, dangerZones[ids[i]]); }
-
+		for (int i = 0; i < n; i++){
+		    std::cout << ids[i] << std::endl;
+		    obstacles->set(i, dangerZones[ids[i]]);
+		    std::cout << ids[i] << std::endl;
+        }
 		// set epsilon back to 0
 		_epsilon = 0.0f;
 	}
 
 	void CalculatePath()
     {
-        for(int i = 0; i < obstacles->size(); i++)
-        {
-            std::cout << obstacles[i]
-        }
-
 		GsVisGraph _vg;                 // The visual graph we use for path planning
 
 		float dang = GS_TORAD(3);       // Circle resolution parameter of the visual graph

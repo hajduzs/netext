@@ -2,6 +2,7 @@ from NetworkModels.ConstarintGraph import ConstraintGraph
 from algorithms.algoritmhs_helper_functions import compare_chosen_edges
 from libs.Wrappers.PathPlanner import PathPlanner
 
+from algorithms.detour_calc import calculate_path
 from algorithms import helper_functions as func
 import logging
 import Utilities.Writer as l_out
@@ -59,9 +60,13 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, co
                 ids.update(BPD.return_ids_for_cut(c))
             ids = list(ids)
 
-            PP.calculate_r_detour(pi, pg, ids)
-            pp_cost = PP.getCost()
-            pp_path = PP.getPath()
+            #PP.calculate_r_detour(pi, pg, ids)
+            #pp_cost = PP.getCost()
+            #pp_path = PP.getPath()
+
+            if len(ids) == 0:
+                continue
+            pp_cost, pp_path = calculate_path(pi, pg, R, DZL, ids)
 
             d["path"] = pp_path
             d["cost"] = pp_cost

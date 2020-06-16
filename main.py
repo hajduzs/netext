@@ -52,7 +52,7 @@ for g in func.load_graph_names(FILES):
 
     R_values = [BOUNDING_BOX['small_side'] * scale / 100 for scale in range(5, 16)]
     # TODO: R 0 lesz, ha pl y koordináta csak egy van.
-    for R in [60]:
+    for R in [200]:
 
         func.create_r_output_directory(FILES, R)
 

@@ -4,8 +4,9 @@ import os
 import logging
 import math
 import itertools
-
+import shapely.geometry as sg
 import Utilities.Geometry2D as geom
+import random
 from algorithms.graph_reading import generate_json_from_graphml, generate_json_from_lgf, \
     generate_json_from_lgfll, generate_json_from_ggml, generate_json_from_gml
 
@@ -75,6 +76,14 @@ def generate_or_read_json(FILES, g):
         return True
     else:
         return True  # if file already exists, all good
+
+
+def sample_point(poly: sg.Polygon):
+    minx, miny, maxx, maxy = poly.bounds
+    while True:
+        p = sg.Point(random.uniform(minx, maxx), random.uniform(miny, maxy))
+        if poly.contains(p):
+            return p
 
 
 def calculate_bounding_box(graph, r=0, epsilon=0):
