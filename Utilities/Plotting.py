@@ -40,7 +40,21 @@ def read_json_graph(jsonpath):
     return G
 
 
-def replot(gname, grpath, jsonpath, zones, paths, R, type):
+def convert_str_list_to_list(l: str):
+    strlist = l.strip().rstrip("]").lstrip("[").split(",")
+    return [int(x) for x in strlist]
+
+
+def get_zone_ids_for_cuts(cut_ids, cl, dl):
+    z = set()
+    for c in convert_str_list_to_list(cut_ids):
+       z.update(convert_str_list_to_list(cl[c]))
+    r = list(z)
+    r.sort()
+    return r
+
+
+def replot(gname, grpath, jsonpath, zones, cuts, paths, R, type):
     figure, ax = plt.subplots()
 
     graph = read_json_graph(jsonpath)
@@ -62,6 +76,9 @@ def replot(gname, grpath, jsonpath, zones, paths, R, type):
             line = plt.Line2D((p1[0], p2[0]), (p1[1], p2[1]), color='black', linewidth=0.2)
             ax.add_artist(line)
 
+    with open(cuts) as f:
+        cutlist = [z.split(";")[1] for z in f.readlines()][1:]
+
     with open(zones) as f:
         zonelist = [z.split(";")[1] for z in f.readlines()][1:]
 
@@ -69,11 +86,12 @@ def replot(gname, grpath, jsonpath, zones, paths, R, type):
         pathlist = [z.split(";") for z in f.readlines()][1:]
 
     cc = 0
-    colors = get_colors_form_file(len(zonelist))
+    colors = get_colors_form_file(len(cutlist))
 
-    for edge, path, cost, zones in pathlist:
+    for edge, path, cost, cuts in pathlist:
         # get danger zone polys and plot them
-        for dz in zones.strip().rstrip("]").lstrip("[").split(","):
+        asd = get_zone_ids_for_cuts(cuts, cutlist, zonelist)
+        for dz in asd:
             zone = Polygon(func.destringify_points(zonelist[int(dz)]))
             ax.add_patch(PolygonPatch(zone, fc=colors[cc], ec=colors[cc], alpha=0.4, zorder=3))
 
@@ -86,7 +104,7 @@ def replot(gname, grpath, jsonpath, zones, paths, R, type):
             line = plt.Line2D((p1[0], p2[0]), (p1[1], p2[1]), color=colors[cc], linewidth=0.5 * 1.5)
             ax.add_artist(line)
         cc += 1
-        if cc == len(zones):
+        if cc == len(cutlist):
             cc = 0
 
     filepath = grpath + "/" + gname + type + ".tex"
@@ -103,6 +121,7 @@ def plot(files):
            files["g_r_path"],
            files["js_name"],
            files["g_r_path_data"] + "/zones.txt",
+           files["g_r_path_data"] + "/cuts.txt",
            files["g_r_path_data"] + "/lp_paths.txt",
            float(files["g_r_path"].split("/")[-1].split("_")[-1]),
            "_lp")
@@ -110,6 +129,7 @@ def plot(files):
            files["g_r_path"],
            files["js_name"],
            files["g_r_path_data"] + "/zones.txt",
+           files["g_r_path_data"] + "/cuts.txt",
            files["g_r_path_data"] + "/heur_paths.txt",
            float(files["g_r_path"].split("/")[-1].split("_")[-1]),
            "_heur")

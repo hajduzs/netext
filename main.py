@@ -79,9 +79,10 @@ for g in func.load_graph_names(FILES):
         func.append_topology_with_repeaters(TOPOLOGY, 10)
 
         CL = CutList(DZL, TOPOLOGY)
-        BPD = BipartiteDisasterGraph(CL, TOPOLOGY)
 
-        BPD.plot("asd.png")
+        l_out.write_cuts(f'{FILES["g_r_path_data"]}/cuts.txt', CL)
+
+        BPD = BipartiteDisasterGraph(CL, TOPOLOGY)
 
         # now we can choose the method
 
@@ -112,10 +113,12 @@ for g in func.load_graph_names(FILES):
             mod, pp, lp_edges = linear_prog_method(TOPOLOGY, DZL, CL, BPD, R, FILES['g_r_path_data'], all_constr=True)
             compare_chosen(lp_edges, TOPOLOGY, R, "LP")
             logging.info("-")
-            he_edges = heuristic_2(TOPOLOGY, DZL, BPD, R, FILES['g_r_path_data'], pp, mod)
+            he_edges = heuristic_2(TOPOLOGY, DZL, CL, BPD, R, FILES['g_r_path_data'], pp, mod)
             compare_chosen(he_edges, TOPOLOGY, R, "HEUR")
 
+        plot(FILES)
         try:
-            plot(FILES)
+            pass
+            #plot(FILES)
         except:
             logging.warning("sorry, could not plot")

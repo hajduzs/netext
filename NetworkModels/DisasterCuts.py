@@ -31,6 +31,7 @@ class DisasterCut:
 
     def join(self, other):
         self.dangerZones.extend(other.dangerZones)
+        DisasterCut.id -= 1
 
     def return_danger_zone_ids(self):
         return self.dangerZones
@@ -58,6 +59,7 @@ class CutList:
         self.cutList = []
         for cut in DZL.generate_disaster_cuts():
             self.add_disaster_cut(cut)
+        self.refresh_ids()
         self.topology = topology
 
     def get_cut_count(self):
@@ -84,12 +86,15 @@ class CutList:
         l.sort()
         return l
 
+    def refresh_ids(self):
+        for i in range(0, len(self.cutList)):
+            self.cutList[i].id = i
+
     def indexOf(self, item):
         for i in range(0, len(self.cutList)):
             if self.cutList[i].id == int(item[1:]):
                 return i
         raise Exception("cut doesnt exist")
-
 
     def __len__(self):
         return len(self.cutList)

@@ -70,9 +70,9 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, co
 
             d["path"] = pp_path
             d["cost"] = pp_cost
-            d["ids"] = set(ids)
+            d["ids"] = set(cuts)
 
-            MODEL += mip.xsum([X[CLI.indexOf(k)] for k in cuts]) <= pp_cost
+            MODEL += mip.xsum([X[k] for k in cuts]) <= pp_cost
             CL[c_index] = (pnodes, pp_path)
             c_index += 1
 
@@ -110,6 +110,6 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, co
     l_out.write_paths("{}/{}".format(g_r_path, "lp_paths.txt"), chosen_edges)
 
     logging.debug(" ## Comparing LP solution to actual lower bound:")
-    #compare_chosen_edges(chosen_edges, DZL, MODEL)
+    compare_chosen_edges(chosen_edges, CLI, MODEL)
 
     return MODEL, PP, chosen_edges

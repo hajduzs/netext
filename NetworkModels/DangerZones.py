@@ -7,7 +7,6 @@ from algorithms.helper_functions import destringify_points, sample_point
 import logging
 
 
-
 def reset_counter():
     DangerZone.id = 0
     DisasterCut.id = 0
@@ -39,8 +38,7 @@ class DangerZone:
                     set1.extend(components[j])
             cuts.append(DisasterCut(self.id, [set0, set1]))
 
-        # wont be needing this anymore
-        #del self.graph
+        del self.graph  # wont be needing this anymore
 
         return cuts
 
@@ -105,7 +103,7 @@ class DangerZoneList:
                 dz = DangerZone(G, face)
                 self.add_danger_zone(dz)
 
-        logging.info(f'{self.omit_count} danger zones omitted from a total od {len(faces)}')
+        logging.info(f'{self.omit_count} danger zones omitted from a total of {len(faces)}')
 
     def generate_disaster_cuts(self):
         cuts = []

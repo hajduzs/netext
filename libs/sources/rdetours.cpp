@@ -1,6 +1,5 @@
 # include <sig/gs_vis_graph.h>
 # include <sig/sn_poly_editor.h>
-# include <iostream>
 
 class PathPlanner {
 
@@ -40,12 +39,10 @@ public:
 	{
 		GsPolygon& p = dangerZones.push();
 		p.setpoly(polydata);
-		std::cout << dangerZones.size() << " "<< polydata << std::endl;
 	}
 
 	void SetDangerZones(int* ids, int n)
 	{
-	    std::cout << "set: "<< n << "size: " << dangerZones.size() << std::endl;
 		//empty obstacles
 		obstacles = new GsPolygons();
 		obstacles->init();
@@ -53,9 +50,7 @@ public:
 
 		//fill in with new polygons
 		for (int i = 0; i < n; i++){
-		    std::cout << ids[i] << std::endl;
 		    obstacles->set(i, dangerZones[ids[i]]);
-		    std::cout << ids[i] << std::endl;
         }
 		// set epsilon back to 0
 		_epsilon = 0.0f;

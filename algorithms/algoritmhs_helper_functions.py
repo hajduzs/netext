@@ -22,12 +22,12 @@ def get_ids_to_avoid(n, d, BPD, TOPOLOGY):
     return list(ids)
 
 
-def compare_chosen_edges(chosen_edges, DZL, MODEL):
+def compare_chosen_edges(chosen_edges, CLI, MODEL):
     a_sum = 0  # actual sum
-    for edge, path, cost, zones in chosen_edges:
+    for edge, path, cost, cuts in chosen_edges:
         a_sum += cost
-        lower_bound = sum([MODEL.vars[z_id].x for z_id in zones])
-        logging.info(f'ids: {[z for z in zones]}')
+        lower_bound = sum([MODEL.vars[c_id].x for c_id in cuts])
+        logging.info(f'ids: {[c for c in cuts]}')
         if lower_bound != 0:
             difference = 100 * (cost - lower_bound) / lower_bound
         else:
@@ -36,7 +36,7 @@ def compare_chosen_edges(chosen_edges, DZL, MODEL):
         logging.info(f'compare done for edge {edge}. LB: {lower_bound} AC: {cost} .. diff: {cost - lower_bound} '
                      f'(+{difference}%)')
 
-    lb_sum = sum([MODEL.vars[i].x for i in range(0, len(DZL))])  # lower bound sum
+    lb_sum = sum([MODEL.vars[i].x for i in range(0, len(CLI))])  # lower bound sum
     if lb_sum != 0:
         change = 100 * (a_sum - lb_sum) / lb_sum
     else:
@@ -57,7 +57,7 @@ def compare_chosen(chosen_edges, TOPOLOGY, R, method):
             diff = 100 * (cost / ub)
             logging.info(f'long - Compared {edge}. C: {cost} UB:{ub} - D: {diff}%')
         else:
-            ub = 4 * pi * acos(dist / (2 * R))
+            ub = 4 * pi * R * acos(dist / (2 * R))
             diff = 100 * (cost / ub)
             logging.info(f'short - Compared {edge}. C: {cost} UB:{ub} - D: {diff}%')
 
