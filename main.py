@@ -13,9 +13,6 @@ import shutil
 import logging
 
 # GLOBAL VARIABLES
-import math
-
-# TODO! : solutions are broken, LP and HEUR protects only danger zones, not cuts!
 
 DEBUG_MODE = False
 
@@ -25,7 +22,7 @@ FILES = {}
 
 # paths
 if len(sys.argv) > 1 and DEBUG_MODE is False:
-    FILES['input_dir'] = "graphs/" + sys.argv[1] + "/"
+    FILES['input_dir'] = sys.argv[1] + "/"
 else:
     if os.path.exists("output"):
         shutil.rmtree("output")
@@ -50,9 +47,7 @@ for g in func.load_graph_names(FILES):
     BOUNDING_BOX = func.calculate_bounding_box(TOPOLOGY)
     func.append_data_with_edge_chains(TOPOLOGY)
 
-    R_values = [BOUNDING_BOX['small_side'] * scale / 100 for scale in range(5, 16)]
-    # TODO: R 0 lesz, ha pl y koordináta csak egy van.
-    for R in [200]:
+    for R in func.get_r_values(BOUNDING_BOX, TOPOLOGY):
 
         func.create_r_output_directory(FILES, R)
 
@@ -64,11 +59,8 @@ for g in func.load_graph_names(FILES):
         if faces is None:
             logging.critical("Could not calculate faces - continuing.")
             continue
-        #faces = faces[3:4]
         DZL = DangerZoneList(TOPOLOGY, R, GAMMA, faces)
         l_out.write_dangerzones("{}/{}".format(FILES['g_r_path_data'], "zones.txt"), DZL)
-
-        # TODO what if there are too many Danger zones (for ex: colt with 7500)
 
         logging.info(f'Danger zones in total: {len(DZL.dangerZones)}')
 
@@ -76,7 +68,7 @@ for g in func.load_graph_names(FILES):
             logging.warning("We do not continue further, as there are too many danger zones.")
             continue
 
-        func.append_topology_with_repeaters(TOPOLOGY, 10)
+        # func.append_topology_with_repeaters(TOPOLOGY, 10)
 
         CL = CutList(DZL, TOPOLOGY)
 
@@ -89,7 +81,7 @@ for g in func.load_graph_names(FILES):
         chosen_edges = None
         switch = -1
 
-        R -= R * 0.09
+        R -= R * 0.09   # TODO: we cheat because path finding is buggy
 
         if switch == 0:             # Original heuristic (v2)
             from algorithms.heuristic_version_2 import heuristic_2
@@ -116,9 +108,7 @@ for g in func.load_graph_names(FILES):
             he_edges = heuristic_2(TOPOLOGY, DZL, CL, BPD, R, FILES['g_r_path_data'], pp, mod)
             compare_chosen(he_edges, TOPOLOGY, R, "HEUR")
 
-        plot(FILES)
         try:
-            pass
-            #plot(FILES)
+            plot(FILES)
         except:
             logging.warning("sorry, could not plot")

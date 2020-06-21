@@ -41,8 +41,7 @@ def read_json_graph(jsonpath):
 
 
 def convert_str_list_to_list(l: str):
-    strlist = l.strip().rstrip("]").lstrip("[").split(",")
-    return [int(x) for x in strlist]
+    return [int(x) for x in l.strip().rstrip("]").lstrip("[").split(",")]
 
 
 def get_zone_ids_for_cuts(cut_ids, cl, dl):

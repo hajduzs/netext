@@ -5,6 +5,7 @@ import logging
 import math
 import itertools
 import shapely.geometry as sg
+
 import Utilities.Geometry2D as geom
 import random
 from algorithms.graph_reading import generate_json_from_graphml, generate_json_from_lgf, \
@@ -197,3 +198,14 @@ def stringify_points(points):
     ret = ret.rstrip()
     return ret
 
+
+def get_r_values(bb, topology):
+    v = bb['small_side'] / 100
+    edge_lens = []
+    for n1, n2, data in topology.edges(data=True):
+        edge_lens.append(geom.point_to_point(*data['points']))
+    edge_lens.sort()
+    r = [v * 5, v * 10, v * 15, edge_lens[-1] / 3, edge_lens[-1] / 1.5]
+    while 0 in r:  # for the case when r might become zero
+        r.remove(0)
+    return r

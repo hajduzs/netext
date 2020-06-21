@@ -93,8 +93,15 @@ def get_detour(pa, pb, r, polygons):
     return pp.getPath(), pp.getCost()
 
 
-def calculate_path(pa, pb, r, dzl, ids):
-    o_path, o_cost = get_detour(pa, pb, r, get_str_polygons_from_dzl(dzl, ids))
+def get_detour_fast(pa, pb, ids_to_avoid, pp):
+    pp.calculate_r_detour(pa, pb, ids_to_avoid)
+    return pp.getPath(), pp.getCost()
+
+
+def calculate_path(pa, pb, r, dzl, ids, default_pp):
+
+    o_path, o_cost = get_detour_fast(pa, pb, ids, default_pp)
+    # it ha been: get_detour(pa, pb, r, get_str_polygons_from_dzl(dzl, ids))
 
     if point_to_point(pa, pb) < 4 * r:
         n_polygons, s_polygons = cut_polygons(pa, pb, get_polygons_from_dzl(dzl, ids))

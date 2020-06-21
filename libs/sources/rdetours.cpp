@@ -24,7 +24,6 @@ public:
 
 	PathPlanner()
 	{
-		//std::cout << "const called" << std::endl;
 		_path = new char[2];
 		_path[0] = '-';
 		_path[1] = '\0';

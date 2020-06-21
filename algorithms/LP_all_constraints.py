@@ -66,7 +66,7 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, co
 
             if len(ids) == 0:
                 continue
-            pp_cost, pp_path = calculate_path(pi, pg, R, DZL, ids)
+            pp_cost, pp_path = calculate_path(pi, pg, R, DZL, ids, PP)
 
             d["path"] = pp_path
             d["cost"] = pp_cost
@@ -99,7 +99,7 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, co
 
     # TODO: ide kell beszúrni, ha egy constr nem =re teljesül MODEL += <i_subs>
 
-    MODEL.write("model.lp")
+    MODEL.write(f'{g_r_path}/model.lp')
 
     CG = ConstraintGraph(MODEL.constrs) #(BPD, DZL) #(MODEL.constrs)
 
