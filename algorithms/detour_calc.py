@@ -6,6 +6,7 @@ from shapely.geometry.linestring import LineString
 from shapely.ops import split
 from algorithms.helper_functions import sample_point, destringify_points, stringify_points
 
+import logging
 from matplotlib import pyplot as plt
 from descartes import PolygonPatch
 
@@ -30,7 +31,7 @@ def test_plot(pa, pb, np, sp):
 
 
 def test_cut_polygons():
-    p = Polygon([(0,0),(2,0),(2,2),(4,2),(4,0),(6,0),(6,4),(0,4)])
+    p = Polygon([(0, 0), (2, 0), (2, 2), (4, 2), (4, 0), (6, 0), (6, 4), (0, 4)])
     a = 0, 0
     b = 7, 6
     cut_polygons(a, b, [p])
@@ -90,16 +91,21 @@ def get_detour(pa, pb, r, polygons):
         pp.addDangerZone(p)
     ids_to_avoid = [i for i in range(0, len(polygons))]
     pp.calculate_r_detour(pa, pb, ids_to_avoid)
+    if pp.getCost() == -1:
+        logging.critical(f'Path not found. {pa} -- {pb}  polygons: {polygons}')
+        raise Exception("Path not found! (short edge) Aborting")
     return pp.getPath(), pp.getCost()
 
 
 def get_detour_fast(pa, pb, ids_to_avoid, pp):
     pp.calculate_r_detour(pa, pb, ids_to_avoid)
+    if pp.getCost() == -1:
+        logging.critical(f'Path not found. {pa} -- {pb}  ids: {ids_to_avoid}')
+        raise Exception("Path not found! (regular edge) Aborting")
     return pp.getPath(), pp.getCost()
 
 
 def calculate_path(pa, pb, r, dzl, ids, default_pp):
-
     o_path, o_cost = get_detour_fast(pa, pb, ids, default_pp)
     # it ha been: get_detour(pa, pb, r, get_str_polygons_from_dzl(dzl, ids))
 

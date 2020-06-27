@@ -53,27 +53,18 @@ class BipartiteDisasterGraph:
         self.topology = topology
         self.Cuts = cut_list
         self.Edges = cut_list.return_all_protecting_edges()
+        self.total_edges_left = 0
         self.graph = self.load_graph()
-
-
-    def return_nodes_for_edge(self, edge_name):
-        for e in self.Edges:
-            if e.name == edge_name:
-                return e.edge
-        return None
 
     def return_ids_for_cut(self, node_name):
         return self.Cuts.cutList[node_name].return_danger_zone_ids()
-        for n in self.Cuts.cutList:
-            if n.get_name() == node_name:
-                return n.return_danger_zone_ids()
-        return None
 
     def load_graph(self):
         G = nx.Graph()
 
         for e in self.Edges:
             G.add_node(e.name, vrtx=e, bipartite=0)
+            self.total_edges_left += 1
 
         for c in self.Cuts:
             G.add_node(c.id, cut=c, bipartite=1, cost=float("inf"), neigh=0)
@@ -109,6 +100,30 @@ class BipartiteDisasterGraph:
         c += "nodes_right: {}\n".format([n[0] for n in self.graph.nodes(data=True) if n[1]["bipartite"]==1])
         c += "edges: {}\n".format(self.graph.edges(data=True))
         return c
+
+    def num_path_calls(self):
+        total_n = 0
+        for n, d in self.graph.nodes(data=True):
+            if d['bipartite'] == 1:
+                continue
+            nc = [x for x in self.graph.neighbors(n)]
+            # print(f'Edge {n} nc: {len(nc)}')
+
+            total_n += 2 ** len(nc) - 1
+        return total_n
+
+    def get_neighbors_distribution(self):
+        dist = dict()
+        for n, d in self.graph.nodes(data=True):
+            if d['bipartite'] == 0:
+                nc = self.graph.degree[n]
+                if nc in dist:
+                    dist[nc] += 1
+                else:
+                    dist[nc] = 1
+        dist = list(dist.items())
+        dist.sort()
+        return dist
 
     def plot(self, filepath):
         plt.close()

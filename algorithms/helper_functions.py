@@ -27,7 +27,7 @@ def create_r_output_directory(FILES, R):
 
     # set Up logging
     fileh = logging.FileHandler(FILES['g_r_path'] + "/log.txt", 'w')
-    formt = logging.Formatter('%(levelname)-8.8s%(message)s')
+    formt = logging.Formatter('%(levelname)-9.9s%(message)s')
     fileh.setFormatter(formt)
     log = logging.getLogger()
     for hdlr in log.handlers[:]:  # remove all old handlers
@@ -187,7 +187,7 @@ def destringify_points(pts):
     points = []
     for p in pts.strip("\n").strip("  ").split("  "):
         xy = p.split(" ")
-        points.append((float(xy[0]), float(xy[1])))
+        points.append((float(xy[0].replace(',', '.')), float(xy[1].replace(',', '.'))))
     return points
 
 
@@ -205,7 +205,11 @@ def get_r_values(bb, topology):
     for n1, n2, data in topology.edges(data=True):
         edge_lens.append(geom.point_to_point(*data['points']))
     edge_lens.sort()
-    r = [v * 5, v * 10, v * 15, edge_lens[-1] / 3, edge_lens[-1] / 1.5]
+
+    r = [v * 1, v * 2, v * 3, v * 5,
+         v * 7, v * 10, v * 13, v * 15,
+         edge_lens[-1] / 8, edge_lens[-1] / 10]
     while 0 in r:  # for the case when r might become zero
         r.remove(0)
+    r.sort()
     return r

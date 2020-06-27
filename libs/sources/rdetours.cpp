@@ -1,5 +1,6 @@
 # include <sig/gs_vis_graph.h>
 # include <sig/sn_poly_editor.h>
+# include <iostream>
 
 class PathPlanner {
 
@@ -11,6 +12,7 @@ class PathPlanner {
 	char* _path;                    // The path calculated
 	float _cost;                    // the cost of the most recently calculated path
 	float _epsilon;					// The epsilon needed to get a valid path
+	int _retries;                   // avoid too much retires
 
 	int strlen(float f)
 	{   // .12345 max accuracy -> 6 mor chars needed.
@@ -29,6 +31,7 @@ public:
 		_path[1] = '\0';
 		_cost = 0.0f;
 		_epsilon = 0.0f;
+		_retries = 0;
 		dangerZones.init();
 		obstacles = new GsPolygons();
 	}
@@ -81,10 +84,20 @@ public:
 		}
 		else
 		{
-			_epsilon += R * 0.01; 		//increase epsilon
-			CalculatePath();			//try again
-		}
-
+		    if(_retries < 5)
+		    {
+			    _epsilon += R * 0.01; 		//increase epsilon
+			    _retries++;
+			    CalculatePath();	        //try again
+		    }
+		    else
+		    {
+		        std::cout << "path find not successful" << std::endl;
+		        delete[] _path;
+			    _path = new char[2] {'-', '\0'};
+			    _cost = -1;
+		    }
+        }
 	}
 
 	char* GetPath(){ return _path; }

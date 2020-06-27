@@ -4,6 +4,7 @@ from algorithms.helper_functions import get_connetion_points_from_node_set
 
 def reset_counter():
     DisasterCut.id = 0
+    CutList.join_count = 0
 
 
 REPEATERS = False
@@ -12,6 +13,7 @@ REPEATERS = False
 class DisasterCut:
 
     id = 0
+    join_count = 0
 
     def __init__(self, danger_zones, node_sets):
         self.id = DisasterCut.id
@@ -32,6 +34,7 @@ class DisasterCut:
     def join(self, other):
         self.dangerZones.extend(other.dangerZones)
         DisasterCut.id -= 1
+        CutList.join_count += 1
 
     def return_danger_zone_ids(self):
         return self.dangerZones
@@ -55,6 +58,9 @@ class DisasterCut:
 
 
 class CutList:
+
+    join_count = 0
+
     def __init__(self, DZL, topology):
         self.cutList = []
         for cut in DZL.generate_disaster_cuts():

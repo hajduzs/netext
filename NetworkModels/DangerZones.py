@@ -111,6 +111,18 @@ class DangerZoneList:
             cuts.extend(dz.get_disaster_cuts())
         return cuts
 
+    def get_distribution(self):
+        dist = dict()
+        for z in self:
+            t = nx.number_connected_components(z.graph)
+            if t in dist:
+                dist[t] += 1
+            else:
+                dist[t] = 1
+        dist = list(dist.items())
+        dist.sort()
+        return dist
+
 
 class DZLIterator:
 

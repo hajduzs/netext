@@ -32,7 +32,7 @@ def heuristic_2(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, PP, compare_model=None):
         H.remove_node(maxn[0])
 
         for n, d in H.nodes(data=True):
-            if d['bipartite'] is 0:
+            if d['bipartite'] == 0:
                 neigh_cuts = [v for v in H.nodes if H.has_edge(n, v)]
                 d["neigh"] = len(neigh_cuts)
 
@@ -136,6 +136,6 @@ def heuristic_2(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, PP, compare_model=None):
     logging.debug(" ## Comparing HEURISTIC solution to actual lower bound:")
 
     if compare_model is not None:
-        compare_chosen_edges(chosen_edges, CLI, compare_model)
+        compare_chosen_edges(chosen_edges, CLI, compare_model, method="HEUR")
 
     return chosen_edges

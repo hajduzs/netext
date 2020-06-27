@@ -9,12 +9,13 @@ import Utilities.Writer as l_out
 import mip
 import itertools
 import time
+import progressbar
 
 
-def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, constr_it=False):
+def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path):
     # SET UP PATH PLANNER
 
-    logging.debug(f' -- Beginning LP method. all_constr: {all_constr}')
+    logging.debug(f' -- Beginning LP method.')
 
     PP = PathPlanner()
     PP.setR(R)
@@ -35,6 +36,15 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, co
     CL = {}
     c_index = 0
 
+    bar = progressbar.ProgressBar(maxval=BPD.num_path_calls(),
+                      widgets=["paths: ", progressbar.Percentage(),
+                               progressbar.Bar('=', '[', ']', ' ', ),
+                               progressbar.SimpleProgress(), " ",
+                               progressbar.ETA()
+                               ]
+                                  )
+    bar.start()
+    num_calls = 0
     for n, d in BPD.graph.nodes(data=True):
 
         if d["bipartite"] == 1:
@@ -46,15 +56,14 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, co
         pg = func.get_coords_for_node(pnodes[1], TOPOLOGY)
 
         # get adjacent cuts
-        nc = [v for v in BPD.graph.nodes if BPD.graph.has_edge(n, v)]   # neighbouring cuts
+        nc = [v for v in BPD.graph.neighbors(n)]   # neighbouring cuts
+
         d["neigh"] = len(nc)
 
-        if all_constr:
-            p_cuts = itertools.chain.from_iterable(itertools.combinations(nc, r) for r in range(1, len(nc) + 1))
-        else:
-            p_cuts = [nc]
+        p_cuts = itertools.chain.from_iterable(itertools.combinations(nc, r) for r in range(1, len(nc) + 1))
 
         for cuts in p_cuts:
+
             ids = set()
             for c in cuts:
                 ids.update(BPD.return_ids_for_cut(c))
@@ -66,6 +75,10 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, co
 
             if len(ids) == 0:
                 continue
+
+            num_calls += 1
+            bar.update(num_calls)
+
             pp_cost, pp_path = calculate_path(pi, pg, R, DZL, ids, PP)
 
             d["path"] = pp_path
@@ -76,13 +89,14 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, co
             CL[c_index] = (pnodes, pp_path)
             c_index += 1
 
+    bar.finish()
     logging.debug('Constraint graph updated from BPD.')
     logging.debug(f'Time needed: {time.time() - start_time}')
     start_time = time.time()
 
     MODEL.objective = mip.maximize(mip.xsum(X))
 
-    # max egy percig fusson
+    # TODO: make it silent (verbose, no output)
     status = MODEL.optimize(max_seconds=60)
 
     logging.debug('LP Solution calculated.')
@@ -101,7 +115,7 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, co
 
     MODEL.write(f'{g_r_path}/model.lp')
 
-    CG = ConstraintGraph(MODEL.constrs) #(BPD, DZL) #(MODEL.constrs)
+    CG = ConstraintGraph(MODEL.constrs)
 
     CG.print_data()
 
@@ -110,6 +124,6 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, all_constr=True, co
     l_out.write_paths("{}/{}".format(g_r_path, "lp_paths.txt"), chosen_edges)
 
     logging.debug(" ## Comparing LP solution to actual lower bound:")
-    compare_chosen_edges(chosen_edges, CLI, MODEL)
+    compare_chosen_edges(chosen_edges, CLI, MODEL, method="LP")
 
     return MODEL, PP, chosen_edges

@@ -3,6 +3,7 @@ import mip
 import networkx as nx
 
 
+
 class ConstraintGraph:
 
     def __init__(self, c: mip.ConstrList):
