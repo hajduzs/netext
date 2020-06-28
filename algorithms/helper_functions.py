@@ -209,6 +209,8 @@ def get_r_values(bb, topology):
     r = [v * 2, v * 5,
          v * 7, v * 10, v * 15,
          edge_lens[0] * 5]
+    #r = [v * i for i in range(1, 3)]
+    #r.append(40)
     while 0 in r:  # for the case when r might become zero
         r.remove(0)
     r.sort()

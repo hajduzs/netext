@@ -4,7 +4,7 @@ from Utilities.Plotting import plot_preformatted
 
 def replot_all():
     graphs = []
-    for(dp, dn, fns) in os.walk("output"):
+    for(dp, dn, fns) in os.walk("../output"):
         graphs = dn
         break
 
@@ -23,4 +23,5 @@ def replot_all():
             plot_preformatted(files)
 
 
+os.chdir('..')
 replot_all()

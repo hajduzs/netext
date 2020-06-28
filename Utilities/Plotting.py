@@ -114,7 +114,6 @@ def replot(gname, grpath, jsonpath, zones, cuts, paths, R, type):
     filepath = grpath + "/" + gname + type + ".png"
     figure.savefig(filepath, dpi=300)
 
-
 def plot(files):
     replot(files["g_path"].split("/")[-1],
            files["g_r_path"],

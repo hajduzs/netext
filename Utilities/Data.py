@@ -35,8 +35,12 @@ def wri(files):
             if type(data) is list:
                 se = ET.SubElement(run, attr)
                 for k, v in data:
-                    sse = ET.SubElement(se, str(k))
-                    sse.text = str(v)
+                    sse = ET.SubElement(se, 'dist_data')
+                    sse_value = ET.SubElement(sse, 'value')
+                    sse_value.text = str(k)
+                    sse_count = ET.SubElement(sse, 'count')
+                    sse_count.text = str(k)
+
                 continue
 
             if type(data) is dict:
@@ -82,8 +86,12 @@ def write_topology_info(topology: nx.Graph, files):
 
         degree_distribution = ET.SubElement(graph, 'degree_distribution')
         for k, v in dist:
-            sse = ET.SubElement(degree_distribution, str(k))
-            sse.text = str(v)
+            sse = ET.SubElement(degree_distribution, 'dist_data')
+            sse_value = ET.SubElement(sse, 'value')
+            sse_value.text = str(k)
+            sse_count = ET.SubElement(sse, 'count')
+            sse_count.text = str(k)
+
             continue
             degree = ET.SubElement(degree_distribution, 'value')
             degree.set('degree', str(k))
