@@ -9,7 +9,7 @@ import Utilities.Writer as l_out
 import mip
 import itertools
 import time
-import progressbar
+#import progressbar
 
 
 def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path):
@@ -35,7 +35,7 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path):
 
     CL = {}
     c_index = 0
-
+    '''
     bar = progressbar.ProgressBar(maxval=BPD.num_path_calls(),
                       widgets=["paths: ", progressbar.Percentage(),
                                progressbar.Bar('=', '[', ']', ' ', ),
@@ -45,6 +45,7 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path):
                                   )
     bar.start()
     num_calls = 0
+    '''
     for n, d in BPD.graph.nodes(data=True):
 
         if d["bipartite"] == 1:
@@ -76,8 +77,8 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path):
             if len(ids) == 0:
                 continue
 
-            num_calls += 1
-            bar.update(num_calls)
+            # num_calls += 1
+            # bar.update(num_calls)
 
             pp_cost, pp_path = calculate_path(pi, pg, R, DZL, ids, PP)
 
@@ -89,7 +90,7 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path):
             CL[c_index] = (pnodes, pp_path)
             c_index += 1
 
-    bar.finish()
+    #bar.finish()
     logging.debug('Constraint graph updated from BPD.')
     logging.debug(f'Time needed: {time.time() - start_time}')
     start_time = time.time()

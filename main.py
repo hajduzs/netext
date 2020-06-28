@@ -79,7 +79,7 @@ for g in func.load_graph_names(FILES):
 
         Info.get_instance().num_zones_omitted = DZL.omit_count
         Info.get_instance().num_zones_remaining = len(DZL)
-        if len(DZL) > 699:
+        if len(DZL) > 599:
             logging.warning("We do not continue further, as there are too many danger zones.")
             Info.write_run_info(FILES)
             Info.reset()
