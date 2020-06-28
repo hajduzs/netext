@@ -206,9 +206,9 @@ def get_r_values(bb, topology):
         edge_lens.append(geom.point_to_point(*data['points']))
     edge_lens.sort()
 
-    r = [v * 1, v * 2, v * 3, v * 5,
-         v * 7, v * 10, v * 13, v * 15,
-         edge_lens[-1] / 8, edge_lens[-1] / 10]
+    r = [v * 2, v * 5,
+         v * 7, v * 10, v * 15,
+         edge_lens[0] * 5]
     while 0 in r:  # for the case when r might become zero
         r.remove(0)
     r.sort()
