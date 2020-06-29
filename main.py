@@ -57,7 +57,7 @@ for g in func.load_graph_names(FILES):
     rv = func.get_r_values(BOUNDING_BOX, TOPOLOGY)
     for R in rv:
 
-        Info.get_instance().r = R
+        Info.get_instance().radius = R
         Info.get_instance().gamma = GAMMA
         Info.get_instance().success = False
 
