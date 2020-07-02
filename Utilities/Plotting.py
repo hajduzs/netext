@@ -7,9 +7,14 @@ import algorithms.graph_reading
 from algorithms import helper_functions as func
 import json
 import logging
+import re
 
 logging.getLogger('matplotlib.font_manager').disabled = True
 
+
+def reformat_tikz_figure(filepath):
+    #TODO: get plotting to anotther level
+    pass
 
 def get_colors_form_file(n):
     file = open("other_data/distinct_colors.txt", 'r')
@@ -113,6 +118,9 @@ def replot(gname, grpath, jsonpath, zones, cuts, paths, R, type):
 
     filepath = grpath + "/" + gname + type + ".png"
     figure.savefig(filepath, dpi=300)
+    reformat_tikz_figure(filepath)
+    plt.close('all')
+
 
 def plot(files):
     replot(files["g_path"].split("/")[-1],

@@ -18,14 +18,11 @@ import shutil
 import logging
 
 # GLOBAL VARIABLES
-
 DEBUG_MODE = False
-
 GAMMA = 1.1    # anything wider than 120° will be ignored TODO: function to convert degrees to gamma
 FILES = {}
 
-
-# paths
+# get graph paths for the run
 if len(sys.argv) > 1 and DEBUG_MODE is False:
     FILES['input_dir'] = sys.argv[1] + "/"
 else:
@@ -38,22 +35,23 @@ if not os.path.exists("output"):
 
 for g in func.load_graph_names(FILES):
 
+    # Create overall output directory for a specific graph
     func.create_output_directory(FILES, g)
 
     # Generate (or read, if it already exists) JSON from input file
-
     if func.generate_or_read_json(FILES, g) is None:
         logging.critical("Could not generate JSON")
         continue
 
     # Load topology, append it with data, create bounding box
-
     TOPOLOGY = algorithms.graph_reading.load_graph_form_json(FILES['js_name'])
     BOUNDING_BOX = func.calculate_bounding_box(TOPOLOGY)
     func.append_data_with_edge_chains(TOPOLOGY)
 
+    # Write topology specific info to XML file
     write_topology_info(TOPOLOGY, FILES)
 
+    # get feasible-looking values for R and run the algorithms
     rv = func.get_r_values(BOUNDING_BOX, TOPOLOGY)
     for R in rv:
 
@@ -61,65 +59,67 @@ for g in func.load_graph_names(FILES):
         Info.get_instance().gamma = GAMMA
         Info.get_instance().success = False
 
+        # create r-specific output directory for files
         func.create_r_output_directory(FILES, R)
-
         logging.debug(f'{R} for {FILES["g_path"]} -- source: {FILES["input_dir"]}')
 
-        # generate danger zones, and then the bipartite disaster graph
-
+        # Create a division of the 2D plane using the topology information
         faces = get_division_from_json(R, FILES['js_name'], "{}/faces.txt".format(FILES['g_r_path_data']))
         Info.get_instance().num_faces = len(faces)
         if faces is None:
             logging.critical("Could not calculate faces - continuing.")
             continue
+
+        # Select the by-definition danger zones from the faces and create a DZ list
         DZL = DangerZoneList(TOPOLOGY, R, GAMMA, faces)
         l_out.write_dangerzones("{}/{}".format(FILES['g_r_path_data'], "zones.txt"), DZL)
-
         logging.info(f'Danger zones in total: {len(DZL)}')
-
         Info.get_instance().num_zones_omitted = DZL.omit_count
         Info.get_instance().num_zones_remaining = len(DZL)
+
+        # If there are too many danger zones, we nope out
         if len(DZL) > 599:
             logging.warning("We do not continue further, as there are too many danger zones.")
             Info.write_run_info(FILES)
             Info.reset()
             continue
-
-        # func.append_topology_with_repeaters(TOPOLOGY, 10)
-
         Info.get_instance().danger_zone_component_distribution = DZL.get_distribution()
 
-        CL = CutList(DZL, TOPOLOGY)
+        # OPTIONAL: repeater method
+        # func.append_topology_with_repeaters(TOPOLOGY, 10)
 
+        # Generate disaster cuts from danger zones and create a Cut List
+        CL = CutList(DZL, TOPOLOGY)
         Info.get_instance().num_cuts = len(CL)
         Info.get_instance().cut_join_count = CutList.join_count
-
         l_out.write_cuts(f'{FILES["g_r_path_data"]}/cuts.txt', CL)
 
+        # Create the Bipartite Disaster graph from the Information in the Cut List
         BPD = BipartiteDisasterGraph(CL, TOPOLOGY)
-
         Info.get_instance().bpdg_neighbors_distribution = BPD.get_neighbors_distribution()
         Info.get_instance().total_constraints = BPD.num_path_calls()
         Info.get_instance().top_level_constraints = BPD.total_edges_left
 
+        # If there are too much shortest path calculations, we just nope out
+        # TODO: optimize on path calls (order them, omit some, etc)
         if BPD.num_path_calls() > 99999:
             logging.warning("We do not continue further, as there are too many constraints.")
             Info.write_run_info(FILES)
             Info.reset()
             continue
 
-        # now we can choose the method
-
-        chosen_edges = None
-
-        R -= R * 0.09   # TODO: we cheat because path finding is buggy
+        # TODO: we cheat because path finding is buggy
+        R -= R * 0.09
 
         try:
             mod, pp, lp_edges = linear_prog_method(TOPOLOGY, DZL, CL, BPD, R, FILES['g_r_path_data'])
             compare_chosen(lp_edges, TOPOLOGY, R, "LP")
+
             logging.info("-")
+
             he_edges = heuristic_2(TOPOLOGY, DZL, CL, BPD, R, FILES['g_r_path_data'], pp, mod)
             compare_chosen(he_edges, TOPOLOGY, R, "HEUR")
+
             Info.get_instance().success = True
 
         except Exception as e:
@@ -131,5 +131,6 @@ for g in func.load_graph_names(FILES):
 
         try:
             plot(FILES)
-        except:
+        except Exception as e:
+            logging.warning(e)
             logging.warning("sorry, could not plot")

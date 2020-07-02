@@ -1,3 +1,4 @@
+cd ..
 cd build
 cd siglib
 cp ../../libs/sources/rdetours.cpp src/rdetours.cpp

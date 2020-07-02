@@ -8,6 +8,7 @@
 # curl
 
 # SIG INSTALLATION AND SO COMPILATION
+cd ..
 
 mkdir build
 cd build
