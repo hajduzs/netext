@@ -65,10 +65,10 @@ for g in func.load_graph_names(FILES):
 
         # Create a division of the 2D plane using the topology information
         faces = get_division_from_json(R, FILES['js_name'], "{}/faces.txt".format(FILES['g_r_path_data']))
-        Info.get_instance().num_faces = len(faces)
         if faces is None:
             logging.critical("Could not calculate faces - continuing.")
             continue
+        Info.get_instance().num_faces = len(faces)
 
         # Select the by-definition danger zones from the faces and create a DZ list
         DZL = DangerZoneList(TOPOLOGY, R, GAMMA, faces)

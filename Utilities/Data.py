@@ -61,7 +61,10 @@ def wri(files):
 def write_topology_info(topology: nx.Graph, files):
     with open(f'{files["g_path"]}/topology_info.xml', 'w') as f:
         graph = ET.Element('graph')
-        graph.set('name', topology.name)
+
+        # graph name
+        graph_name = ET.SubElement(graph, 'name')
+        graph_name.text = str(topology.name)
 
         # number of vertices
         num_vertices = ET.SubElement(graph, 'num_vertices')

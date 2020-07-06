@@ -16,11 +16,15 @@ def get_element_from_file(xml_file):
         data = re.sub(r'<r>(.*)</r>',
                       r'<radius>\1</radius>',
                       data)
+        data = re.sub(r'<graph name="(.*)">',
+                      r'<graph><name>\1</name>',
+                      data)
 
         return ET.fromstring(data, parser=ET.XMLParser(encoding='utf-8'))
 
 
 o_dir = "/home/zsombor/Desktop/output"
+# o_dir = "/home/zsombor/work/netext/output"
 
 # get graph names
 graphs = []
@@ -38,7 +42,7 @@ for x in graphs:
     topology_tag = get_element_from_file(t_info)
     g_tag.append(topology_tag)
     runs = ET.SubElement(g_tag, 'runs')
-    # get every of the r_ rubdirectories
+    # get every of the r_ subdirectories
     subdirs = next(os.walk(f'{o_dir}/{x}'))[1]
     for subdir in subdirs:
         r_info = f'{o_dir}/{x}/{subdir}/run_info.xml'
