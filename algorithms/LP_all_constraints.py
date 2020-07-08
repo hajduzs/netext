@@ -9,12 +9,14 @@ import Utilities.Writer as l_out
 import mip
 import itertools
 import time
+from Utilities.Timeit import Timeit
 #import progressbar
 
 
-def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path):
+def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, full=True):
     # SET UP PATH PLANNER
 
+    Timeit.init()
     logging.debug(f' -- Beginning LP method.')
 
     PP = PathPlanner()
@@ -61,7 +63,10 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path):
 
         d["neigh"] = len(nc)
 
-        p_cuts = itertools.chain.from_iterable(itertools.combinations(nc, r) for r in range(1, len(nc) + 1))
+        if full:
+            p_cuts = itertools.chain.from_iterable(itertools.combinations(nc, r) for r in range(1, len(nc) + 1))
+        else:
+            p_cuts = [nc]
 
         for cuts in p_cuts:
 
@@ -69,10 +74,6 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path):
             for c in cuts:
                 ids.update(BPD.return_ids_for_cut(c))
             ids = list(ids)
-
-            #PP.calculate_r_detour(pi, pg, ids)
-            #pp_cost = PP.getCost()
-            #pp_path = PP.getPath()
 
             if len(ids) == 0:
                 continue
@@ -121,10 +122,14 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path):
     CG.print_data()
 
     chosen_edges = CG.optimize(CL)
+    alg_time = Timeit.time("lp_solution")
 
     l_out.write_paths("{}/{}".format(g_r_path, "lp_paths.txt"), chosen_edges)
 
     logging.debug(" ## Comparing LP solution to actual lower bound:")
-    compare_chosen_edges(chosen_edges, CLI, MODEL, method="LP")
+    if full:
+        compare_chosen_edges(chosen_edges, CLI, MODEL, alg_time=alg_time, method="LP")
+    else:
+        compare_chosen_edges(chosen_edges, CLI, MODEL, alg_time=alg_time, method="LP_EASED")
 
     return MODEL, PP, chosen_edges

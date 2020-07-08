@@ -77,7 +77,7 @@ def replot(gname, grpath, jsonpath, zones, cuts, paths, R, type):
             p1 = data['points'][i]
             p2 = data['points'][i + 1]
 
-            line = plt.Line2D((p1[0], p2[0]), (p1[1], p2[1]), color='black', linewidth=0.2)
+            line = plt.Line2D((p1[0], p2[0]), (p1[1], p2[1]), color='black', linewidth=1)
             ax.add_artist(line)
 
     with open(cuts) as f:
@@ -99,14 +99,12 @@ def replot(gname, grpath, jsonpath, zones, cuts, paths, R, type):
             zone = Polygon(func.destringify_points(zonelist[int(dz)]))
             ax.add_patch(PolygonPatch(zone, fc=colors[cc], ec=colors[cc], alpha=0.4, zorder=3))
 
-        spoints = path.split('  ')
-        points = [(p.split(' ')) for p in spoints]
-        for i in range(0, len(points) - 1):
-            p1 = (float(points[i][0]), float(points[i][1]))
-            p2 = (float(points[i + 1][0]), float(points[i + 1][1]))
+        x_c, y_c = [], []
+        for p in func.destringify_points(path):
+            x_c.append(float(p[0]))
+            y_c.append(float(p[1]))
+        ax.plot(x_c, y_c, color=colors[cc], linewidth=0.8)
 
-            line = plt.Line2D((p1[0], p2[0]), (p1[1], p2[1]), color=colors[cc], linewidth=0.5 * 1.5)
-            ax.add_artist(line)
         cc += 1
         if cc == len(cutlist):
             cc = 0

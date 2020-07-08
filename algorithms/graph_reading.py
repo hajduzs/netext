@@ -10,6 +10,7 @@ def load_graph_form_json(path):
         G = nx.Graph()
 
         G.graph['name'] = data['name']
+        G.graph['scale_factor'] = data['scale_factor']
 
         for node in data['nodes']:
             G.add_node(node['id'])
@@ -162,44 +163,6 @@ def node_already_in(n, nodes):
 
 
 def prep_graph_for_json_dump(path, nodes, edges):
-    if False:
-        nodes_only_once = []
-        duplicates = {}
-        for n in nodes:
-            ins = node_already_in(n, nodes_only_once)
-            if ins is not None:
-                if ins in duplicates:
-                    duplicates[ins].append(n["id"])
-                else:
-                    duplicates[ins] = [n["id"]]
-            else:
-                nodes_only_once.append(n)
-
-        dlist = []
-        for k, v in duplicates.items():
-            dlist.append([k] + v)
-
-        edges_repaired = []
-
-        for e in edges:
-            f = e["from"]
-            t = e["to"]
-            for lst in dlist:
-                if f in lst:
-                    fi = lst.index(f)
-                    dlfi = dlist.index(lst)
-                if t in lst:
-                    ti = lst.index(t)
-                    dlti = dlist.index(lst)
-            if dlfi == dlti:
-                continue
-            edges_repaired.append({
-                "from": dlist[dlfi][0],
-                "to": dlist[dlti][0]
-            })
-
-        print("weeded out duplicate nodes")
-
     return {
         "name": path.split("/")[-1].split(".")[0],
         "nodes": nodes,  # _only_once,

@@ -4,12 +4,14 @@ from libs.Wrappers.PathPlanner import PathPlanner
 import logging
 import Utilities.Writer as l_out
 import time
+from Utilities.Timeit import Timeit
 
 
 def heuristic_2(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, PP, compare_model=None):
 
     logging.debug('-- Beginning HEURISTIC method.')
     start_time = time.time()
+    Timeit.init()
 
     # HEUR step 1 (if done alone)
     # code MIGRATED to old_code.
@@ -131,11 +133,13 @@ def heuristic_2(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, PP, compare_model=None):
     # edge, path, cost, zones
     # ( (1, 2), 'path', 311.01, [2,3] )
 
+    alg_time = Timeit.time("heur_solution")
+
     l_out.write_paths("{}/{}".format(g_r_path, "heur_paths.txt"), chosen_edges)
 
     logging.debug(" ## Comparing HEURISTIC solution to actual lower bound:")
 
     if compare_model is not None:
-        compare_chosen_edges(chosen_edges, CLI, compare_model, method="HEUR")
+        compare_chosen_edges(chosen_edges, CLI, compare_model, alg_time=alg_time, method="HEUR")
 
     return chosen_edges

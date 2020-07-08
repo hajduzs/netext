@@ -66,6 +66,10 @@ def write_topology_info(topology: nx.Graph, files):
         graph_name = ET.SubElement(graph, 'name')
         graph_name.text = str(topology.name)
 
+        # scale factor
+        scale_factor = ET.SubElement(graph, 'scale_factor')
+        scale_factor.text = str(topology.graph['scale_factor'])
+
         # number of vertices
         num_vertices = ET.SubElement(graph, 'num_vertices')
         num_vertices.text = str(topology.number_of_nodes())

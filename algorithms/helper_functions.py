@@ -41,7 +41,37 @@ def load_graph_names(FILES):
     for (dp, dn, filenames) in os.walk(FILES['input_dir']):
         gl.extend(filenames)
         break
+    gl.sort()
     return gl
+
+
+def get_bounds(points):
+    ret = {
+        "x_min": min(p['coords'][0] for p in points),
+        "y_min": min(p['coords'][1] for p in points),
+        "x_max": max(p['coords'][0] for p in points),
+        "y_max": max(p['coords'][1] for p in points)
+    }
+    return ret
+
+
+def scale_js_graph(js, scale_to=10**4, left_bottom=(0, 0), integer=True):
+    bb = get_bounds(js['nodes'])
+    diff_x = left_bottom[0] - bb['x_min']
+    diff_y = left_bottom[1] - bb['y_min']
+    scale_factor = scale_to / max(bb['x_max'] + diff_x, bb['y_max'] + diff_y)
+    js['scale_factor'] = scale_factor
+    for p in js['nodes']:
+        p['coords'] = [
+            (p['coords'][0] + diff_x) * scale_factor,
+            (p['coords'][1] + diff_y) * scale_factor,
+        ]
+    if integer:
+        for p in js['nodes']:
+            p['coords'] = [
+                int(p['coords'][0]),
+                int(p['coords'][1])
+            ]
 
 
 def generate_or_read_json(FILES, g):
@@ -52,24 +82,32 @@ def generate_or_read_json(FILES, g):
         file_format = g.split('.')[1]
         input_file = FILES['input_dir'] + g
 
-        if file_format == "lgf":
-            js = generate_json_from_lgf(input_file)
+        try:
 
-        if file_format == "lgfll":
-            js = generate_json_from_lgfll(input_file)
+            if file_format == "lgf":
+                js = generate_json_from_lgf(input_file)
 
-        if file_format == "gml":
-            js = generate_json_from_gml(input_file)
+            if file_format == "lgfll":
+                js = generate_json_from_lgfll(input_file)
 
-        if file_format == "ggml":
-            js = generate_json_from_ggml(input_file)
+            if file_format == "gml":
+                js = generate_json_from_gml(input_file)
 
-        if file_format == "graphml":
-            js = generate_json_from_graphml(input_file)
+            if file_format == "ggml":
+                js = generate_json_from_ggml(input_file)
+
+            if file_format == "graphml":
+                js = generate_json_from_graphml(input_file)
+        except nx.NetworkXError as e:
+            js = None
+        except Exception as e:
+            js = None
 
         if js is None:
             logging.warning(f'Not supported file format for {g}. continuing as if nothing happened')
             return None
+
+        scale_js_graph(js)
 
         with open(FILES['js_name'], "w") as f:
             f.write(json.dumps(js))
@@ -80,11 +118,22 @@ def generate_or_read_json(FILES, g):
 
 
 def sample_point(poly: sg.Polygon):
+    if not poly.is_valid:
+        poly = poly.buffer(0)
+        if poly.is_empty:
+            return None
+    try:
+        p = poly.representative_point()
+    except Exception as e:
+        p = None
+    return p
+    '''
     minx, miny, maxx, maxy = poly.bounds
     while True:
         p = sg.Point(random.uniform(minx, maxx), random.uniform(miny, maxy))
         if poly.contains(p):
             return p
+    '''
 
 
 def calculate_bounding_box(graph, r=0, epsilon=0):
@@ -203,15 +252,30 @@ def get_r_values(bb, topology):
     v = bb['small_side'] / 100
     edge_lens = []
     for n1, n2, data in topology.edges(data=True):
-        edge_lens.append(geom.point_to_point(*data['points']))
+        edge_lens.append(int(geom.point_to_point(*data['points'])))
     edge_lens.sort()
+    sf = topology.graph['scale_factor']
 
-    r = [v * 2, v * 5,
-         v * 7, v * 10, v * 15,
-         edge_lens[0] * 5]
-    #r = [v * i for i in range(1, 3)]
-    #r.append(40)
-    while 0 in r:  # for the case when r might become zero
-        r.remove(0)
-    r.sort()
+    r = [
+        (5 * sf, 'real_world_tiny'),
+        (10 * sf, 'real_world_small'),
+        (20 * sf, 'real_world_med'),
+        (40 * sf, 'real_world_great'),
+        (60 * sf, 'real_world_severe'),
+        (80 * sf, 'real_world_disastrous'),
+    ]
+
+    #for i in range(1, 6):
+    #     r.append((i * 100, f'topology_{i*100}'))
+
+    #r.append((100, f'topology_{100}'))
+    #r.append((1000, f'topology_{1000}'))
+    #r.append((1500, f'topology_{1500}'))
+    for a in r:
+        if a[0] == 0:
+            r.remove(a)
+
+    #r.sort()
+    for v in range(0, len(r)):
+        r[v] = int(r[v][0]), r[v][1]
     return r

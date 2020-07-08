@@ -97,6 +97,9 @@ class DangerZoneList:
             else:
                 p = sample_point(poly)
 
+            if p is None:
+                continue
+
             G = hit_graph_with_disaster(topology, r, (p.x, p.y))
 
             if is_face_valid_dangerzone(gamma, poly, r, G, self):
