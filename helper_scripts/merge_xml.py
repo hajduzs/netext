@@ -23,8 +23,8 @@ def get_element_from_file(xml_file):
         return ET.fromstring(data, parser=ET.XMLParser(encoding='utf-8'))
 
 
-o_dir = "/home/zsombor/Desktop/output"
-o_dir = "/home/zsombor/work/netext/output"
+o_dir = "/home/zsombor/Desktop/new_out/output"
+#o_dir = "/home/zsombor/work/netext/output"
 
 # get graph names
 graphs = []
@@ -44,6 +44,7 @@ for x in graphs:
     runs = ET.SubElement(g_tag, 'runs')
     # get every of the r_ subdirectories
     subdirs = next(os.walk(f'{o_dir}/{x}'))[1]
+    found_s = False
     for subdir in subdirs:
         r_info = f'{o_dir}/{x}/{subdir}/run_info.xml'
         if not os.path.exists(r_info):
@@ -52,10 +53,26 @@ for x in graphs:
         if run_tag.find("success") is None:
             continue
 
+        # TODO: fix lp result getting into eased problems
+        # TODO: fix lower bound on eased problems
         # change <lp_ and <heur_ result tags to
         # <result> <algorithm> lp/heur structure
         # and make sure they are at the end of it
         if run_tag.find("success").text == "True":
+            found_s = True
+
+            if int(run_tag.find('total_constraints').text) > 99999:
+                run_tag.find('eased').text = 'True'
+                _ = run_tag.find('lp_results')
+                if _ is not None:
+                    run_tag.remove(_)
+                _ = run_tag.find('lower_bound')
+                if _ is not None:
+                    run_tag.remove(_)
+            else:
+                _ = run_tag.find('lp_eased_results')
+                if _ is not None:
+                    run_tag.remove(_)
 
             lpr = ET.Element('result')
             lp_results = run_tag.find('lp_results')
@@ -88,6 +105,9 @@ for x in graphs:
                 run_tag.append(hr)
 
         runs.append(run_tag)
+
+    if not found_s:
+        root.remove(g_tag)
 
 with open("measurement_merged.xml", 'w') as f:
     md = ET.tostring(root)

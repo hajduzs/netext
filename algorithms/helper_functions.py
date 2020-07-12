@@ -7,7 +7,6 @@ import itertools
 import shapely.geometry as sg
 
 import Utilities.Geometry2D as geom
-import random
 from algorithms.graph_reading import generate_json_from_graphml, generate_json_from_lgf, \
     generate_json_from_lgfll, generate_json_from_ggml, generate_json_from_gml
 
@@ -107,6 +106,7 @@ def generate_or_read_json(FILES, g):
             logging.warning(f'Not supported file format for {g}. continuing as if nothing happened')
             return None
 
+        # Scale the graph up for more clear plots and performance
         scale_js_graph(js)
 
         with open(FILES['js_name'], "w") as f:
@@ -256,6 +256,14 @@ def get_r_values(bb, topology):
     edge_lens.sort()
     sf = topology.graph['scale_factor']
 
+    # sf overwrite for hand-drawn graphs
+    if topology.graph['name'] == 'tata-india':
+        sf *= 0.00348286206
+    if topology.graph['name'] == 'telia-sonero-usa':
+        sf *= 0.00135335255
+    if topology.graph['name'] == 'teliasonero_eu':
+        sf *= 0.00138691516
+
     r = [
         (5 * sf, 'real_world_tiny'),
         (10 * sf, 'real_world_small'),
@@ -265,8 +273,8 @@ def get_r_values(bb, topology):
         (80 * sf, 'real_world_disastrous'),
     ]
 
-    #for i in range(1, 6):
-    #     r.append((i * 100, f'topology_{i*100}'))
+    for i in range(1, 6):
+         r.append((i * 100, f'topology_{i*100}'))
 
     #r.append((100, f'topology_{100}'))
     #r.append((1000, f'topology_{1000}'))
