@@ -19,12 +19,15 @@ def get_element_from_file(xml_file):
         data = re.sub(r'<graph name="(.*)">',
                       r'<graph><name>\1</name>',
                       data)
+        data = re.sub(r'<time>([0-9]*).([0-9]*)</time>',
+                      r'<runtime>\1.\2</runtime>',
+                      data)
 
         return ET.fromstring(data, parser=ET.XMLParser(encoding='utf-8'))
 
 
-o_dir = "/home/zsombor/Desktop/new_out/output"
-#o_dir = "/home/zsombor/work/netext/output"
+o_dir = "/home/zsombor/Desktop/hehe"
+o_dir = "/home/zsombor/work/netext/output"
 
 # get graph names
 graphs = []

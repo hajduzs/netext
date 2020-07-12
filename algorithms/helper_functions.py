@@ -273,8 +273,9 @@ def get_r_values(bb, topology):
         (80 * sf, 'real_world_disastrous'),
     ]
 
-    for i in range(1, 6):
-         r.append((i * 100, f'topology_{i*100}'))
+    r=[]
+    for i in range(1, 101):
+         r.append((i * 50, f'topology_{i*100}'))
 
     #r.append((100, f'topology_{100}'))
     #r.append((1000, f'topology_{1000}'))

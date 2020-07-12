@@ -51,14 +51,14 @@ for g in func.load_graph_names(FILES):
     # Load topology, append it with data, create bounding box
     TOPOLOGY = algorithms.graph_reading.load_graph_form_json(FILES['js_name'])
 
-    '''
-    import matplotlib.pyplot as plt
-    import networkx as nx
-    print(TOPOLOGY.name)
-    nx.draw_networkx(TOPOLOGY, {n:d['coords'] for n, d in TOPOLOGY.nodes(data=True)}, with_labels=True)
-    plt.show()
-    continue
-    '''
+    if False:
+        import matplotlib.pyplot as plt
+        import networkx as nx
+        print(TOPOLOGY.name)
+        nx.draw_networkx(TOPOLOGY, {n:d['coords'] for n, d in TOPOLOGY.nodes(data=True)}, with_labels=True)
+        plt.show()
+        continue
+
 
     BOUNDING_BOX = func.calculate_bounding_box(TOPOLOGY)
     func.append_data_with_edge_chains(TOPOLOGY)
