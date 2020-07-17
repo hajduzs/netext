@@ -60,9 +60,11 @@ class Solver:
         logging.debug(f'Comparing edges produced by {self.method}')
         check_new_edges_bounds(self._solution, self._pipe.topology, self._pipe.r)
 
-    def compare_to_bound(self, outfile=None):
+    def compare_to_bound(self):
         if self._solution is None:
             raise Exception("Solution not calculated! Call .solve() first.")
         if self._pipe.lb_model is None:
-            raise Exception("No Lower bound specified in the pipeline.")
+            # TODO ez így nem jó,
+            #raise Exception("No Lower bound specified in the pipeline.")
+            pass
         compare_and_log_info(self._solution, self._pipe, self._time, self.method, self._total_constr)

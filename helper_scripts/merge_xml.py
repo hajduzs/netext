@@ -7,6 +7,7 @@ def get_element_from_file(xml_file):
     with open(xml_file) as file:
         data = file.read()
         # for older results
+        '''
         data = re.sub(r'<([0-9]*)>([0-9]*)</[0-9]*>',
                       r'<dist_data>'
                       r'<value>\1</value>'
@@ -22,7 +23,7 @@ def get_element_from_file(xml_file):
         data = re.sub(r'<time>([0-9]*).([0-9]*)</time>',
                       r'<runtime>\1.\2</runtime>',
                       data)
-
+        '''
         return ET.fromstring(data, parser=ET.XMLParser(encoding='utf-8'))
 
 

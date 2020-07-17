@@ -35,14 +35,20 @@ def lp_iter(p: Pipeline):
 
 def h_cost(p: Pipeline):
     Timeit.init()
-    edges = heuristic_calc(p)
+    edges = heuristic_calc(p, 'C')
     t = Timeit.time('h_cost')
     return edges, t, None
 
 
 def h_neigh(p: Pipeline):
-    return None
+    Timeit.init()
+    edges = heuristic_calc(p, 'N')
+    t = Timeit.time('h_cost')
+    return edges, t, None
 
 
 def h_avg_cost(p: Pipeline):
-    return None
+    Timeit.init()
+    edges = heuristic_calc(p, 'A')
+    t = Timeit.time('h_cost')
+    return edges, t, None

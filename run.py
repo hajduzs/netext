@@ -52,7 +52,7 @@ def run(TOPOLOGY, GAMMA, FILES, R, r_comment, g):
         Info.write_run_info(FILES)
         Info.reset()
         return None
-    Info.get_instance().danger_zone_component_distribution = DZL.get_distribution()
+    # Info.get_instance().danger_zone_component_distribution = DZL.get_distribution()
 
     # OPTIONAL: repeater method
     # func.append_topology_with_repeaters(TOPOLOGY, 10)
@@ -69,7 +69,7 @@ def run(TOPOLOGY, GAMMA, FILES, R, r_comment, g):
     Timeit.init()
     BPD = BipartiteDisasterGraph(CL, TOPOLOGY)
     Info.get_instance().time['bpdg'] = Timeit.time('bpd_calculated')
-    Info.get_instance().bpdg_neighbors_distribution = BPD.get_neighbors_distribution()
+    # Info.get_instance().bpdg_neighbors_distribution = BPD.get_neighbors_distribution()
     Info.get_instance().total_constraints = BPD.num_path_calls()
     Info.get_instance().top_level_constraints = BPD.total_edges_left
 
@@ -92,47 +92,38 @@ def run(TOPOLOGY, GAMMA, FILES, R, r_comment, g):
     pl.bpd = BPD
     pl.lb_model = None
 
-    solvers = [
-        S.Solver(S.LP_FULL, pl),
+    if full:
+        solvers = [S.Solver(S.LP_FULL, pl)]
+    else:
+        solvers = []
+
+    solvers.extend([
         S.Solver(S.LP_ITERATIVE, pl),
-        S.Solver(S.LP_TOP_LEVEL, pl)
-    ]
+        S.Solver(S.LP_TOP_LEVEL, pl),
+        S.Solver(S.H_NEIGH_FIRST, pl),
+        S.Solver(S.H_COST_FIRST, pl),
+        S.Solver(S.H_AVG_COST_FIRST, pl)
+    ])
 
     for s in solvers:
-        s.solve()
-        e = s.solution()
-        s.check_edges()
-        s.compare_to_bound()
-        l_out.write_paths(f'{FILES["g_r_path"]}/{s.method}_edges.txt', e)
-    try:
-        '''
-        if full:
-            lp_full_solver = S.Solver(S.LP_FULL, pipeline=pl)
-            lp_full_solver.solve()
-            lp_full_edges = lp_full_solver.solution()
-            lp_full_solver.check_edges()
-            lp_full_solver.compare_to_bound()
-            l_out.write_paths(f'{FILES["g_r_path"]}/{S.LP_FULL}_edges.txt', lp_full_edges)
+        try:
+            s.solve()
+            e = s.solution()
+            s.check_edges()
+            s.compare_to_bound()
+            l_out.write_paths(f'{FILES["g_r_path"]}/{s.method}_edges.txt', e)
+        except Exception as e:
+            logging.critical(e)
+            logging.critical("Something went terribly wrong, im sorry.")
 
-        
-        mod, pp, lp_edges = linear_prog_method(TOPOLOGY, DZL, CL, BPD, R, FILES['g_r_path_data'], full=full)
-        check_new_edges_bounds(lp_edges, TOPOLOGY, R, "LP")
-        logging.info("-")
-        he_edges = heuristic_2(TOPOLOGY, DZL, CL, BPD, R, FILES['g_r_path_data'], pp, mod)
-        check_new_edges_bounds(he_edges, TOPOLOGY, R, "HEUR")
-        '''
-
-        Info.get_instance().success = True
-
-    except Exception as e:
-        logging.critical(e)
-        logging.critical("Something went terribly wrong, im sorry.")
-        Info.reset()
-
+    Info.get_instance().success = True
     Info.write_run_info(FILES)
-
+    Info.reset()
+    # TODO: FIX plotting for once :D
+    '''
     try:
         plot(FILES)
     except Exception as e:
         logging.warning(e)
         logging.warning("sorry, could not plot")
+    '''

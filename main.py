@@ -46,6 +46,6 @@ for g in func.load_graph_names(FILES):
     write_topology_info(TOPOLOGY, FILES)
 
     # get feasible-looking values for R and run the algorithms
-    rv = func.get_r_values(TOPOLOGY)[0:2]
+    rv = func.get_r_values(TOPOLOGY)
     for R, r_comment in rv:
         run(TOPOLOGY, GAMMA, FILES.copy(), R, r_comment, g)

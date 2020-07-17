@@ -68,16 +68,24 @@ def compare_and_log_info(c_edges, pl, t, method, c=None):
     Info.get_instance().eased = not lb_exists
 
     data = {
-        "time": t,
+        "algorithm": method,
+        "runtime": t,
         "new_edges_count": len(c_edges),
         "new_edges_avg_len": a_sum / len(c_edges),
         "new_edges_total_cost": a_sum,
+        "new_edges_in_km": a_sum / pl.topology.graph['scale_factor'],
         "new_edges_ratio_to_total": a_sum / Info.original_total_edge_length,
     }
     if lb_exists:
         data["new_edges_diff"] = a_sum - lb_sum
+        data["new_edges_diff_km"] = (a_sum - lb_sum) /pl.topology.graph['scale_factor']
         data["new_edges_diff_percentage"] = change
     if c is not None:
         data["constrs_used"] = c
 
-    Info.get_instance().__setattr__(f'{method}_results', data)
+    try:
+        Info.get_instance().__getattribute__('results')
+    except AttributeError:
+        Info.get_instance().results = []
+
+    Info.get_instance().results.append(data)

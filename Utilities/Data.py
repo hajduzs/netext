@@ -33,14 +33,12 @@ def wri(files):
         for attr in attributes:
             data = obj.__getattribute__(attr)
             if type(data) is list:
-                continue
-                se = ET.SubElement(run, attr)
-                for k, v in data:
-                    sse = ET.SubElement(se, 'dist_data')
-                    sse_value = ET.SubElement(sse, 'value')
-                    sse_value.text = str(k)
-                    sse_count = ET.SubElement(sse, 'count')
-                    sse_count.text = str(k)
+                for d in data:
+                    se = ET.SubElement(run, 'result')
+                    for k, v in d.items():
+                        sse = ET.SubElement(se, str(k))
+                        sse.text = str(v)
+
 
                 continue
 
@@ -92,6 +90,7 @@ def write_topology_info(topology: nx.Graph, files):
         dist = list(dist.items())
         dist.sort()
 
+        '''
         degree_distribution = ET.SubElement(graph, 'degree_distribution')
         for k, v in dist:
             sse = ET.SubElement(degree_distribution, 'dist_data')
@@ -105,6 +104,7 @@ def write_topology_info(topology: nx.Graph, files):
             degree.set('degree', str(k))
             count = ET.SubElement(degree, 'count')
             count.text = str(v)
+        '''
 
         avg_degree = ET.SubElement(graph, 'avg_degree')
         avg_degree.text = str(total_degree / topology.number_of_nodes())

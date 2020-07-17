@@ -67,7 +67,7 @@ class BipartiteDisasterGraph:
             self.total_edges_left += 1
 
         for c in self.Cuts:
-            G.add_node(c.id, cut=c, bipartite=1, cost=float("inf"), neigh=0)
+            G.add_node(c.id, cut=c, bipartite=1, cost=float("inf"), neigh=0.5)
 
         for e in self.Edges:
             for c in self.Cuts:
