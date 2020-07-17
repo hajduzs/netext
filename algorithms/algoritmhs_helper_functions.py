@@ -23,66 +23,7 @@ def get_ids_to_avoid(n, d, BPD, TOPOLOGY):
     return list(ids)
 
 
-def compare_chosen_edges(chosen_edges, CLI, MODEL, alg_time, method):
-    eased = False
-    if method == "LP_EASED":
-        eased = True
-
-    a_sum = 0  # actual sum
-    for edge, path, cost, cuts in chosen_edges:
-        a_sum += cost
-        lower_bound = sum([MODEL.vars[c_id].x for c_id in cuts])
-        logging.info(f'ids: {[c for c in cuts]}')
-        if lower_bound != 0:
-            difference = 100 * (cost - lower_bound) / lower_bound
-        else:
-            difference = "ERR"
-            logging.warning("0 lower bound!")
-        logging.info(f'compare done for edge {edge}. LB: {lower_bound} AC: {cost} .. diff: {cost - lower_bound} '
-                     f'(+{difference}%)')
-
-    lb_sum = sum([MODEL.vars[i].x for i in range(0, len(CLI))])  # lower bound sum
-
-    if not eased:
-        Info.get_instance().lower_bound = lb_sum
-    Info.get_instance().eased = eased
-
-    if lb_sum != 0:
-        change = 100 * (a_sum - lb_sum) / lb_sum
-    else:
-        logging.warning("0 LB sum!")
-        change = "ERR"
-        Info.get_instance().error = True
-    logging.info(f'In total: LB: {lb_sum}, AC: {a_sum} .. diff: {a_sum - lb_sum} (+{change}%)')
-
-    data = {
-        "time": alg_time,
-        "new_edges_count": len(chosen_edges),
-        "new_edges_avg_len": a_sum / len(chosen_edges),
-        "new_edges_total_cost": a_sum,
-        "new_edges_diff": a_sum - lb_sum,
-        "new_edges_diff_percentage": change,
-        "new_edges_ratio_to_total": a_sum / Info.original_total_edge_length
-    }
-    if method == "LP":
-        Info.get_instance().lp_results = data
-
-    if method == "HEUR":
-        Info.get_instance().heur_results = data
-
-    if method == "LP_EASED":
-        Info.get_instance().lp_eased_results = {
-            "time": alg_time,
-            "new_edges_count": len(chosen_edges),
-            "new_edges_avg_len": a_sum / len(chosen_edges),
-            "new_edges_total_cost": a_sum,
-            "new_edges_ratio_to_total": a_sum / Info.original_total_edge_length
-        }
-
-
-def compare_chosen(chosen_edges, TOPOLOGY, R, method):
-    logging.debug(f' ## Comparing {method} edges:')
-
+def check_new_edges_bounds(chosen_edges, TOPOLOGY, R):
     for edge, path, cost, zones in chosen_edges:
         p_a = func.get_coords_for_node(edge[0], TOPOLOGY)
         p_b = func.get_coords_for_node(edge[1], TOPOLOGY)
@@ -95,3 +36,48 @@ def compare_chosen(chosen_edges, TOPOLOGY, R, method):
             ub = 4 * pi * R * acos(dist / (2 * R))
             diff = 100 * (cost / ub)
             logging.info(f'short - Compared {edge}. C: {cost} UB:{ub} - D: {diff}%')
+
+
+def compare_and_log_info(c_edges, pl, t, method, c=None):
+    lb_exists = pl.lb_model is not None
+
+    a_sum = 0  # actual sum
+    for edge, path, cost, cuts in c_edges:
+        a_sum += cost
+        if lb_exists:
+            lower_bound = sum([pl.lb_model.vars[c_id].x for c_id in cuts])
+            logging.info(f'ids: {[c for c in cuts]}')
+            if lower_bound != 0:
+                difference = 100 * (cost - lower_bound) / lower_bound
+            else:
+                difference = "ERR"
+                logging.warning("0 lower bound!")
+            logging.info(f'compare done for edge {edge}. LB: {lower_bound} AC: {cost} .. diff: {cost - lower_bound} '
+                         f'(+{difference}%)')
+    if lb_exists:
+        lb_sum = sum([pl.lb_model.vars[i].x for i in range(0, len(pl.cl))])  # lower bound sum
+        Info.get_instance().lower_bound = lb_sum
+        if lb_sum != 0:
+            change = 100 * (a_sum - lb_sum) / lb_sum
+        else:
+            logging.warning("0 LB sum!")
+            change = "ERR"
+            Info.get_instance().error = True
+        logging.info(f'In total: LB: {lb_sum}, AC: {a_sum} .. diff: {a_sum - lb_sum} (+{change}%)')
+
+    Info.get_instance().eased = not lb_exists
+
+    data = {
+        "time": t,
+        "new_edges_count": len(c_edges),
+        "new_edges_avg_len": a_sum / len(c_edges),
+        "new_edges_total_cost": a_sum,
+        "new_edges_ratio_to_total": a_sum / Info.original_total_edge_length,
+    }
+    if lb_exists:
+        data["new_edges_diff"] = a_sum - lb_sum
+        data["new_edges_diff_percentage"] = change
+    if c is not None:
+        data["constrs_used"] = c
+
+    Info.get_instance().__setattr__(f'{method}_results', data)

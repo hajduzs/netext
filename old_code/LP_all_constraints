@@ -10,7 +10,6 @@ import mip
 import itertools
 import time
 from Utilities.Timeit import Timeit
-#import progressbar
 
 
 def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, full=True):
@@ -37,17 +36,7 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, full=True):
 
     CL = {}
     c_index = 0
-    '''
-    bar = progressbar.ProgressBar(maxval=BPD.num_path_calls(),
-                      widgets=["paths: ", progressbar.Percentage(),
-                               progressbar.Bar('=', '[', ']', ' ', ),
-                               progressbar.SimpleProgress(), " ",
-                               progressbar.ETA()
-                               ]
-                                  )
-    bar.start()
-    num_calls = 0
-    '''
+
     for n, d in BPD.graph.nodes(data=True):
 
         if d["bipartite"] == 1:
@@ -78,9 +67,6 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, full=True):
             if len(ids) == 0:
                 continue
 
-            # num_calls += 1
-            # bar.update(num_calls)
-
             pp_cost, pp_path = calculate_path(pi, pg, R, DZL, ids, PP)
 
             d["path"] = pp_path
@@ -91,14 +77,12 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, full=True):
             CL[c_index] = (pnodes, pp_path)
             c_index += 1
 
-    #bar.finish()
     logging.debug('Constraint graph updated from BPD.')
     logging.debug(f'Time needed: {time.time() - start_time}')
     start_time = time.time()
 
     MODEL.objective = mip.maximize(mip.xsum(X))
 
-    # TODO: make it silent (verbose, no output)
     status = MODEL.optimize(max_seconds=60)
 
     logging.debug('LP Solution calculated.')
@@ -110,6 +94,9 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, full=True):
         logging.info(f'{v.name} : {v.x}')
 
     for c in MODEL.constrs:
+        print(" ")
+        for k, v in c.expr.expr.items():
+            print(f'{k} -- {v}')
         if c.slack > 0 and (0 in [v for k, v in c.expr.expr.items()]):
             logging.warning(f'NON_ZERO_SLACK FOUND: {c}')
 

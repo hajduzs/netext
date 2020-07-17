@@ -26,8 +26,11 @@ def get_element_from_file(xml_file):
         return ET.fromstring(data, parser=ET.XMLParser(encoding='utf-8'))
 
 
-o_dir = "/home/zsombor/Desktop/hehe"
-o_dir = "/home/zsombor/work/netext/output"
+o_dir = "/home/zsombor/Desktop/rajzolt/output"
+# o_dir = "/home/zsombor/work/netext/output"
+
+filename = "rajzolt_merged"
+outfile = f'../xml_process/{filename}.xml'
 
 # get graph names
 graphs = []
@@ -112,6 +115,6 @@ for x in graphs:
     if not found_s:
         root.remove(g_tag)
 
-with open("measurement_merged.xml", 'w') as f:
+with open(outfile, 'w') as f:
     md = ET.tostring(root)
     f.write(md.decode('utf-8'))

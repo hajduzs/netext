@@ -3,7 +3,6 @@ import mip
 import networkx as nx
 
 
-
 class ConstraintGraph:
 
     def __init__(self, c: mip.ConstrList):
@@ -57,7 +56,7 @@ class ConstraintGraph:
         chosen = []
         for n, v in C.items():
             if v[0].x == 1:
-                i = int(n[7:-1])
+                i = int(n) #int(n[7:-1])
                 chosen.append(CL[i] + (v[1], self.N(n)))
         return chosen
 

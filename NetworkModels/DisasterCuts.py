@@ -1,5 +1,5 @@
 from NetworkModels.BipartiteGraph import EdgeVertex
-from algorithms.helper_functions import get_connetion_points_from_node_set
+from algorithms.helper_functions import get_connection_points_from_node_set
 
 
 def reset_counter():
@@ -41,8 +41,8 @@ class DisasterCut:
 
     def return_protecting_edges(self, topology, repeaters=REPEATERS):
         if repeaters:
-            n_a = get_connetion_points_from_node_set(topology, self.nodeSets[0])
-            n_b = get_connetion_points_from_node_set(topology, self.nodeSets[1])
+            n_a = get_connection_points_from_node_set(topology, self.nodeSets[0])
+            n_b = get_connection_points_from_node_set(topology, self.nodeSets[1])
         else:
             n_a = self.nodeSets[0]
             n_b = self.nodeSets[1]

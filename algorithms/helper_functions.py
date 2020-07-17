@@ -5,6 +5,7 @@ import logging
 import math
 import itertools
 import shapely.geometry as sg
+import random
 
 import Utilities.Geometry2D as geom
 from algorithms.graph_reading import generate_json_from_graphml, generate_json_from_lgf, \
@@ -118,6 +119,17 @@ def generate_or_read_json(FILES, g):
 
 
 def sample_point(poly: sg.Polygon):
+    # TODO: fix this shit, a danger zoneoknál
+    # nem mindig tesz jót.
+    #first we try by random sampling, 20 times
+    minx, miny, maxx, maxy = poly.bounds
+    i = 0
+    while i < 20:
+        p = sg.Point(random.uniform(minx, maxx), random.uniform(miny, maxy))
+        i += 1
+        if poly.contains(p):
+            return p
+
     if not poly.is_valid:
         poly = poly.buffer(0)
         if poly.is_empty:
@@ -127,13 +139,6 @@ def sample_point(poly: sg.Polygon):
     except Exception as e:
         p = None
     return p
-    '''
-    minx, miny, maxx, maxy = poly.bounds
-    while True:
-        p = sg.Point(random.uniform(minx, maxx), random.uniform(miny, maxy))
-        if poly.contains(p):
-            return p
-    '''
 
 
 def calculate_bounding_box(graph, r=0, epsilon=0):
@@ -182,7 +187,7 @@ def get_live_edges_from_set(topology, nodeset):
     return ret
 
 
-def get_connetion_points_from_node_set(topology, nodeset):
+def get_connection_points_from_node_set(topology, nodeset):
     rep = get_repeaters_from_edge_list(topology,get_live_edges_from_set(topology, nodeset))
     rep.extend(nodeset)
     return rep
@@ -248,8 +253,8 @@ def stringify_points(points):
     return ret
 
 
-def get_r_values(bb, topology):
-    v = bb['small_side'] / 100
+def get_r_values(topology):
+    v = calculate_bounding_box(topology)['small_side'] / 100
     edge_lens = []
     for n1, n2, data in topology.edges(data=True):
         edge_lens.append(int(geom.point_to_point(*data['points'])))

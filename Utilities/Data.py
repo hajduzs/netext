@@ -33,6 +33,7 @@ def wri(files):
         for attr in attributes:
             data = obj.__getattribute__(attr)
             if type(data) is list:
+                continue
                 se = ET.SubElement(run, attr)
                 for k, v in data:
                     sse = ET.SubElement(se, 'dist_data')
