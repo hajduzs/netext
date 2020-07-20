@@ -27,10 +27,10 @@ def get_element_from_file(xml_file):
         return ET.fromstring(data, parser=ET.XMLParser(encoding='utf-8'))
 
 
-o_dir = "/home/zsombor/Desktop/rajzolt/output"
+o_dir = "/home/zsombor/Desktop/latest_0719/output"
 # o_dir = "/home/zsombor/work/netext/output"
 
-filename = "rajzolt_merged"
+filename = "new_1"
 outfile = f'../xml_process/{filename}.xml'
 
 # get graph names
@@ -60,56 +60,8 @@ for x in graphs:
         if run_tag.find("success") is None:
             continue
 
-        # TODO: fix lp result getting into eased problems
-        # TODO: fix lower bound on eased problems
-        # change <lp_ and <heur_ result tags to
-        # <result> <algorithm> lp/heur structure
-        # and make sure they are at the end of it
         if run_tag.find("success").text == "True":
             found_s = True
-
-            if int(run_tag.find('total_constraints').text) > 99999:
-                run_tag.find('eased').text = 'True'
-                _ = run_tag.find('lp_results')
-                if _ is not None:
-                    run_tag.remove(_)
-                _ = run_tag.find('lower_bound')
-                if _ is not None:
-                    run_tag.remove(_)
-            else:
-                _ = run_tag.find('lp_eased_results')
-                if _ is not None:
-                    run_tag.remove(_)
-
-            lpr = ET.Element('result')
-            lp_results = run_tag.find('lp_results')
-            if lp_results is not None:
-                l_alg = ET.SubElement(lpr, 'algorithm')
-                l_alg.text = 'lp'
-                for c in lp_results:
-                    lpr.append(c)
-                run_tag.append(lpr)
-                run_tag.remove(lp_results)
-
-            ler = ET.Element('result')
-            lp_e_results = run_tag.find('lp_eased_results')
-            if lp_e_results is not None:
-                lpe_alg = ET.SubElement(ler, 'algorithm')
-                lpe_alg.text = 'lp_eased'
-                for c in lp_e_results:
-                    ler.append(c)
-                run_tag.append(ler)
-                run_tag.remove(lp_e_results)
-
-            hr = ET.Element('result')
-            heur_results = run_tag.find('heur_results')
-            if heur_results is not None:
-                h_alg = ET.SubElement(hr, 'algorithm')
-                h_alg.text = 'heur'
-                for c in heur_results:
-                    hr.append(c)
-                run_tag.remove(heur_results)
-                run_tag.append(hr)
 
         runs.append(run_tag)
 

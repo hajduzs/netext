@@ -1,10 +1,32 @@
 from algorithms import Pipeline
 from libs.Wrappers.PathPlanner import PathPlanner
 from algorithms import helper_functions as func
-import logging
+from algorithms.detour_calc import calculate_path
 
 
-def calc_edge_costs(BPD, H, TOPOLOGY, PP):
+def best_avg_cost(bpd):
+    return min(dict(bpd.nodes).items(),
+               key=lambda x: x[1]["cost"] / x[1]["neigh"])
+
+
+def best_cost(bpd):
+    return min(dict(bpd.nodes).items(),
+               key=lambda x: x[1]["cost"])
+
+
+def most_cuts_protected(bpd):
+    return max(dict(bpd.nodes).items(),
+               key=lambda x: (x[1]["neigh"], -x[1]["cost"]))
+
+
+_edge_choosers = {
+    'A': best_avg_cost,
+    'C': best_cost,
+    'N': most_cuts_protected,
+}
+
+
+def calc_edge_costs(BPD, H, TOPOLOGY, r, dzl, PP):
     to_remove = []
     for n, d in H.nodes(data=True):
         if d["bipartite"] == 1:
@@ -14,7 +36,7 @@ def calc_edge_costs(BPD, H, TOPOLOGY, PP):
         pi = func.get_coords_for_node(pnodes[0], TOPOLOGY)
         pg = func.get_coords_for_node(pnodes[1], TOPOLOGY)
         # get adjacent cuts
-        neigh_cuts = [v for v in H.neighbors(n)]
+        neigh_cuts = [v for v in H[n]]
         if len(neigh_cuts) == 0:
             to_remove.append(n)
             continue
@@ -24,33 +46,12 @@ def calc_edge_costs(BPD, H, TOPOLOGY, PP):
             ids.update(BPD.return_ids_for_cut(c))
         ids = list(ids)
         # calculate cost
-        PP.calculate_r_detour(pi, pg, ids)
-        cost = PP.getCost()
-        path = PP.getPath()
+        pp_cost, pp_path = calculate_path(pi, pg, r, dzl, ids, PP)
         # update node
-        d["path"] = path
-        d["cost"] = cost
-        d["ids"] = set(ids)
+        d["path"] = pp_path
+        d["cost"] = pp_cost
+        d["ids"] = set(neigh_cuts)
     H.remove_nodes_from(to_remove)
-
-
-def __A(H):
-    return min(dict(H.nodes).items(), key=lambda x: x[1]["cost"] / x[1]["neigh"])
-
-
-def __C(H):
-    return min(dict(H.nodes).items(), key=lambda x: x[1]["cost"])
-
-
-def __N(H):
-    return max(dict(H.nodes).items(), key=lambda x: (x[1]["neigh"], -x[1]["cost"]))  # max neigh, then cost
-
-
-_edge_choosers = {
-    'A': __A,
-    'C': __C,
-    'N': __N,
-}
 
 
 def heuristic_calc(p: Pipeline, method: str):
@@ -69,23 +70,28 @@ def heuristic_calc(p: Pipeline, method: str):
         PP.addDangerZone(dz.string_poly)
 
     H = BPD.graph.copy()
-    calc_edge_costs(BPD, H, TOPOLOGY, PP)
+    calc_edge_costs(BPD, H, TOPOLOGY, R, DZL, PP)
 
-    nodes = []
+    chosen_edges = []
+
     # STEP 2 :: get edges from corresponding heuristic
-    while True:
-        if len(dict(H.nodes).items()) == 0:
-            break
-        maxn = choose_edge(H)
-
-        nodes.append((maxn[1]['vrtx'].edge, maxn[1]['path'],
-                      maxn[1]['cost'],  list(maxn[1]['ids'])))
+    while len(dict(H.nodes).items()) != 0:
+        edge_choice = choose_edge(H)
+        chosen_edges.append(
+            (edge_choice[1]['vrtx'].edge,
+             edge_choice[1]['path'],
+             edge_choice[1]['cost'],
+             list(edge_choice[1]['ids'])
+             )
+        )
 
         # delete cuts protected and node selected
+        H.remove_nodes_from([v for v in H[edge_choice[0]]])
+        H.remove_node(edge_choice[0])
 
-        H.remove_nodes_from([v for v in H.neighbors(maxn[0])])
-        H.remove_node(maxn[0])
+        # re-calculate the costs accordingly
+        calc_edge_costs(BPD, H, TOPOLOGY, R, DZL, PP)
 
-        calc_edge_costs(BPD, H, TOPOLOGY, PP)
+    # we are done, good night
 
-    return nodes
+    return chosen_edges

@@ -5,6 +5,7 @@ class Timeit(object):
     instance = None
     latest_time = None
     latest_msg = None
+
     @staticmethod
     def get_instance():
         if Timeit.instance is None:
@@ -13,10 +14,10 @@ class Timeit(object):
 
     @staticmethod
     def init(msg=None):
-        if msg is not None:
-            Timeit.latest_msg = msg
+        if msg is None:
+            msg = "-"
+        Timeit.latest_msg = msg
         Timeit.latest_time = time.time()
-
 
     @staticmethod
     def time(msg: str):

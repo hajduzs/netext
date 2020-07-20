@@ -42,6 +42,7 @@ class ConstraintGraph:
 
     def optimize(self, CL):
         m = mip.Model()
+        m.verbose = 0
         lhs = self.LHS()
         C = {}
         for i in range(0, len(lhs)):

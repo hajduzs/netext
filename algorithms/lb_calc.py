@@ -6,17 +6,18 @@ import logging
 from libs.Wrappers.PathPlanner import PathPlanner
 from algorithms.detour_calc import calculate_path
 from algorithms import helper_functions as func
+from Utilities.Data import Info
 
 
-def dual_lp_lb_calc(pl: Pipeline, full=True, iterate=False) -> (mip.Model, dict):
+def dual_lp_lb_calc(pl: Pipeline, full=True, iterate=False, c_limit=10**4) -> (mip.Model, dict):
     logging.debug('Beginning LP method')
-
     PP = PathPlanner()
     PP.setR(pl.r)
     for dz in pl.dzl:
         PP.addDangerZone(dz.string_poly)
 
     MODEL = mip.Model()
+    MODEL.verbose = 0
     X = [MODEL.add_var(var_type=mip.CONTINUOUS) for i in range(0, len(pl.cl))]
 
     CL = {}
@@ -55,20 +56,20 @@ def dual_lp_lb_calc(pl: Pipeline, full=True, iterate=False) -> (mip.Model, dict)
             CL[c_index] = pnodes, pp_path
             c_index += 1
 
-    MODEL.objective = mip.maximize(mip.xsum(X))     # TODO: make it silent (verbose, no output)
+    MODEL.objective = mip.maximize(mip.xsum(X))
     MODEL.optimize()
 
     if not full and iterate:
         tight_found = True
-        while tight_found:
+        c_limit = min(Info.get_instance().total_constraints, c_limit)
+        while tight_found and c_index < c_limit:
             tight_found = False
             for c in MODEL.constrs:
                 if c.slack > 0:
-                    print(c)
+                    tight_found = True
                     pnodes = c_powersets[c.name]
-                    no_tight_found = True
-                    cutsss = [int(k.name[4:-1]) for k in c.expr.expr]
-                    minus_one_power_sets = itertools.combinations(cutsss, len(cutsss) - 1)
+                    cuts_in_constr = [int(k.name[4:-1]) for k in c.expr.expr]
+                    minus_one_power_sets = itertools.combinations(cuts_in_constr, len(cuts_in_constr) - 1)
 
                     for cuts in [x for x in minus_one_power_sets]:
                         ids = set()
@@ -87,8 +88,5 @@ def dual_lp_lb_calc(pl: Pipeline, full=True, iterate=False) -> (mip.Model, dict)
                         CL[c_index] = pnodes, pp_path
                         c_index += 1
                     MODEL.optimize()
-
-
-    # TODO: write model.lp to file
-
+        Info.get_instance().iter_completed = not tight_found
     return MODEL, CL

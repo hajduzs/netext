@@ -8,13 +8,10 @@ from algorithms import helper_functions as func
 import json
 import logging
 import re
+import algorithms.Solver as S
 
 logging.getLogger('matplotlib.font_manager').disabled = True
 
-
-def reformat_tikz_figure(filepath):
-    #TODO: get plotting to anotther level
-    pass
 
 def get_colors_form_file(n):
     file = open("other_data/distinct_colors.txt", 'r')
@@ -116,27 +113,23 @@ def replot(gname, grpath, jsonpath, zones, cuts, paths, R, type):
 
     filepath = grpath + "/" + gname + type + ".png"
     figure.savefig(filepath, dpi=300)
-    reformat_tikz_figure(filepath)
     plt.close('all')
 
 
 def plot(files):
-    replot(files["g_path"].split("/")[-1],
-           files["g_r_path"],
-           files["js_name"],
-           files["g_r_path_data"] + "/zones.txt",
-           files["g_r_path_data"] + "/cuts.txt",
-           files["g_r_path_data"] + "/lp_paths.txt",
-           float(files["g_r_path"].split("/")[-1].split("_")[-1]),
-           "_lp")
-    replot(files["g_path"].split("/")[-1],
-           files["g_r_path"],
-           files["js_name"],
-           files["g_r_path_data"] + "/zones.txt",
-           files["g_r_path_data"] + "/cuts.txt",
-           files["g_r_path_data"] + "/heur_paths.txt",
-           float(files["g_r_path"].split("/")[-1].split("_")[-1]),
-           "_heur")
+    for method in S._METHODS:
+        try:
+            replot(files["g_path"].split("/")[-1],
+                   files["g_r_path"],
+                   files["js_name"],
+                   files["g_r_path_data"] + "/zones.txt",
+                   files["g_r_path_data"] + "/cuts.txt",
+                   f'{files["g_r_path_data"]}/{method}_edges.txt',
+                   float(files["g_r_path"].split("/")[-1].split("_")[-1]),
+                   f'_{method}')
+        except Exception as e:
+            logging.warning(f'Plotting {method} edges failed. Cause: {e}')
+
 
 
 def plot_preformatted(files):

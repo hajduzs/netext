@@ -100,8 +100,6 @@ def linear_prog_method(TOPOLOGY, DZL, CLI, BPD, R, g_r_path, full=True):
         if c.slack > 0 and (0 in [v for k, v in c.expr.expr.items()]):
             logging.warning(f'NON_ZERO_SLACK FOUND: {c}')
 
-    # TODO: ide kell beszúrni, ha egy constr nem =re teljesül MODEL += <i_subs>
-
     MODEL.write(f'{g_r_path}/model.lp')
 
     CG = ConstraintGraph(MODEL.constrs)

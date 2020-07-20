@@ -26,10 +26,10 @@ def lp_top_lvl(p: Pipeline):
 
 def lp_iter(p: Pipeline):
     Timeit.init()
-    m, cl = dual_lp_lb_calc(p, full=False, iterate=True)
+    m, cl = dual_lp_lb_calc(p, full=False, iterate=True, c_limit=3 * 10**4)
     cg = ConstraintGraph(m.constrs)
     edges = cg.optimize(cl)
-    t = Timeit.time('lp_top_lvl')
+    t = Timeit.time('lp_iter')
     return edges, t, len(m.constrs)
 
 
@@ -43,12 +43,12 @@ def h_cost(p: Pipeline):
 def h_neigh(p: Pipeline):
     Timeit.init()
     edges = heuristic_calc(p, 'N')
-    t = Timeit.time('h_cost')
+    t = Timeit.time('h_neigh')
     return edges, t, None
 
 
 def h_avg_cost(p: Pipeline):
     Timeit.init()
     edges = heuristic_calc(p, 'A')
-    t = Timeit.time('h_cost')
+    t = Timeit.time('h_avg_cost')
     return edges, t, None

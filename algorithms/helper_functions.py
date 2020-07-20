@@ -272,25 +272,26 @@ def get_r_values(topology):
         sf *= 0.00138691516
         topology.graph['scale_factor'] *= 0.00138691516
 
-    r = [
-        (5 * sf, 'rw_5'),
-        (10 * sf, 'rw_10'),
-        (20 * sf, 'rw_20'),
-        (40 * sf, 'rw_40'),
-        (60 * sf, 'rw_60'),
-        (80 * sf, 'rw_80'),
-        (100 * sf, 'rw_100')
-    ]
+    if False:
+        r = [
+            (5 * sf, 'rw_5'),
+            (10 * sf, 'rw_10'),
+            (20 * sf, 'rw_20'),
+            (40 * sf, 'rw_40'),
+            (60 * sf, 'rw_60'),
+            (80 * sf, 'rw_80'),
+            (100 * sf, 'rw_100')
+        ]
+    else:
+        r = []
+        for i in range(1, 101):
+             r.append((i * 50, f't_{i*100}'))
 
-    '''
-    for i in range(1, 101):
-         r.append((i * 50, f'topology_{i*100}'))
+        for a in r:
+            if a[0] == 0:
+                r.remove(a)
+        r.sort()
 
-    for a in r:
-        if a[0] == 0:
-            r.remove(a)
-    r.sort()
-    '''
     for v in range(0, len(r)):
         r[v] = int(r[v][0]), r[v][1]
 

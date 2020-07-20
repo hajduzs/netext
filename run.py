@@ -105,25 +105,28 @@ def run(TOPOLOGY, GAMMA, FILES, R, r_comment, g):
         S.Solver(S.H_AVG_COST_FIRST, pl)
     ])
 
+    Info.get_instance().results = []
+
     for s in solvers:
         try:
             s.solve()
             e = s.solution()
             s.check_edges()
             s.compare_to_bound()
-            l_out.write_paths(f'{FILES["g_r_path"]}/{s.method}_edges.txt', e)
+            l_out.write_paths(f'{FILES["g_r_path_data"]}/{s.method}_edges.txt', e)
         except Exception as e:
             logging.critical(e)
             logging.critical("Something went terribly wrong, im sorry.")
+    if full:
+        pl.lb_model.write(f'{FILES["g_r_path_data"]}/lp_full_model.lp')
 
-    Info.get_instance().success = True
+    # plot(FILES)
+
+    if not Info.get_instance().results:
+        Info.get_instance().__delattr__('results')
+    else:
+        Info.get_instance().success = True
+
     Info.write_run_info(FILES)
     Info.reset()
-    # TODO: FIX plotting for once :D
-    '''
-    try:
-        plot(FILES)
-    except Exception as e:
-        logging.warning(e)
-        logging.warning("sorry, could not plot")
-    '''
+

@@ -63,8 +63,4 @@ class Solver:
     def compare_to_bound(self):
         if self._solution is None:
             raise Exception("Solution not calculated! Call .solve() first.")
-        if self._pipe.lb_model is None:
-            # TODO ez így nem jó,
-            #raise Exception("No Lower bound specified in the pipeline.")
-            pass
         compare_and_log_info(self._solution, self._pipe, self._time, self.method, self._total_constr)
