@@ -27,10 +27,10 @@ def get_element_from_file(xml_file):
         return ET.fromstring(data, parser=ET.XMLParser(encoding='utf-8'))
 
 
-o_dir = "/home/zsombor/Desktop/latest_0719/output"
+o_dir = "/home/zsombor/Desktop/latest_0620_test/output"
 # o_dir = "/home/zsombor/work/netext/output"
 
-filename = "new_1"
+filename = "test_latesta"
 outfile = f'../xml_process/{filename}.xml'
 
 # get graph names

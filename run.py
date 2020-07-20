@@ -118,7 +118,10 @@ def run(TOPOLOGY, GAMMA, FILES, R, r_comment, g):
             logging.critical(e)
             logging.critical("Something went terribly wrong, im sorry.")
     if full:
-        pl.lb_model.write(f'{FILES["g_r_path_data"]}/lp_full_model.lp')
+        try:
+            pl.lb_model.write(f'{FILES["g_r_path_data"]}/lp_full_model.lp')
+        except:
+            logging.warning("LB model cound not be written to file")
 
     # plot(FILES)
 

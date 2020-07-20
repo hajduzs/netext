@@ -2,7 +2,7 @@ import os
 import algorithms.Solver as S
 from Utilities.Plotting import replot
 
-o_dir = "/home/zsombor/Desktop/latest_0719/output"
+o_dir = "/home/zsombor/Desktop/latest_0620_test/output"
 
 graphs = []
 for (dp, dn, fns) in os.walk(o_dir):
@@ -12,7 +12,7 @@ for (dp, dn, fns) in os.walk(o_dir):
 for x in graphs:
     subdirs = next(os.walk(f'{o_dir}/{x}'))[1]
     for subdir in subdirs:
-        gr = f'{o_dir}/{x}/{subdir}/'
+        gr = f'{o_dir}/{x}/{subdir}'
         for method in S._METHODS:
             try:
                 replot(
@@ -21,7 +21,7 @@ for x in graphs:
                     f'{o_dir}/{x}/{x}.json',
                     f'{gr}/data/zones.txt',
                     f'{gr}/data/cuts.txt',
-                    f'{gr}/{method}_edges.txt',
+                    f'{gr}/data/{method}_edges.txt',
                     float(subdir.split('_')[-1]),
                     f'_{method}'
                 )
