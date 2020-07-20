@@ -98,7 +98,7 @@ def run(TOPOLOGY, GAMMA, FILES, R, r_comment, g):
         solvers = []
 
     solvers.extend([
-        S.Solver(S.LP_ITERATIVE, pl),
+        # S.Solver(S.LP_ITERATIVE, pl),
         S.Solver(S.LP_TOP_LEVEL, pl),
         S.Solver(S.H_NEIGH_FIRST, pl),
         S.Solver(S.H_COST_FIRST, pl),

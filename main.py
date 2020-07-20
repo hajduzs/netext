@@ -5,28 +5,50 @@ from Utilities.Timeit import Timeit
 
 from run import run
 import os
-import sys
 import shutil
 import logging
-
+import argparse
 
 # GLOBAL VARIABLES
-DEBUG_MODE = False
 GAMMA = 1.1    # anything wider than 120° will be ignored TODO: function to convert degrees to gamma
 FILES = {}
 
-# get graph paths for the run
-if len(sys.argv) > 1 and DEBUG_MODE is False:
-    FILES['input_dir'] = sys.argv[1] + "/"
-else:
-    if os.path.exists("output"):
-        shutil.rmtree("output")
-    FILES['input_dir'] = "graphs/tests/"
 
+# arguments
+def dir_path(path):
+    if os.path.isdir(path):
+        return path
+    else:
+        raise argparse.ArgumentTypeError(f"readable_dir:{path} is not a valid path")
+
+
+parser = argparse.ArgumentParser(description='NetExt main entry point')
+parser.add_argument('dir', metavar='D', type=dir_path, nargs=1,
+                    help='One directory where input files can be found')
+parser.add_argument('-rc', metavar='R', type=str, choices=['few', 'medium', 'many'],
+                    help='how many different radii to test the graphs. ')
+parser.add_argument('-d', action='store_true', help='Debug mode.')
+args = parser.parse_args()
+
+graph_names = []
+
+FILES = {'input_dir': args.dir[0]+'/'}
+graph_names.extend(func.load_graph_names(FILES))
+
+r_config = args.rc
+if args.d:
+    ans = input("This will delete the output directory if it exists. Continue? type 'yes'")
+    if ans == "yes":
+        if os.path.exists("output"):
+            shutil.rmtree("output")
+    else:
+        print("Ok, exiting instead.")
+        exit(0)
+print(args.rc)
 if not os.path.exists("output"):
     os.mkdir("output")
 
-for g in func.load_graph_names(FILES):
+for g in graph_names:
 
     # Create overall output directory for a specific graph
     func.create_output_directory(FILES, g)
@@ -46,6 +68,6 @@ for g in func.load_graph_names(FILES):
     write_topology_info(TOPOLOGY, FILES)
 
     # get feasible-looking values for R and run the algorithms
-    rv = func.get_r_values(TOPOLOGY)
+    rv = func.get_r_values(TOPOLOGY, r_config)
     for R, r_comment in rv:
         run(TOPOLOGY, GAMMA, FILES.copy(), R, r_comment, g)

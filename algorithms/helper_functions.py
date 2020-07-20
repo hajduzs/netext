@@ -253,7 +253,7 @@ def stringify_points(points):
     return ret
 
 
-def get_r_values(topology):
+def get_r_values(topology, r_config):
     v = calculate_bounding_box(topology)['small_side'] / 100
     edge_lens = []
     for n1, n2, data in topology.edges(data=True):
@@ -264,15 +264,13 @@ def get_r_values(topology):
     # sf overwrite for hand-drawn graphs
     if topology.graph['name'] == 'tata-india':
         sf *= 0.00348286206
-        topology.graph['scale_factor'] *= 0.00348286206
     if topology.graph['name'] == 'telia-sonero-usa':
         sf *= 0.00135335255
-        topology.graph['scale_factor'] *= 0.00135335255
     if topology.graph['name'] == 'teliasonero_eu':
         sf *= 0.00138691516
-        topology.graph['scale_factor'] *= 0.00138691516
+    topology.graph['scale_factor'] = sf
 
-    if False:
+    if r_config == 'few':
         r = [
             (5 * sf, 'rw_5'),
             (10 * sf, 'rw_10'),
@@ -282,15 +280,23 @@ def get_r_values(topology):
             (80 * sf, 'rw_80'),
             (100 * sf, 'rw_100')
         ]
-    else:
+    elif r_config == 'many' or r_config == 'medium':
         r = []
-        for i in range(1, 101):
-             r.append((i * 50, f't_{i*100}'))
+        if r_config == 'many':
+            cc = 50
+            sc = 80
+        else:       # medium
+            cc = 25
+            sc = 160
+        for i in range(1, cc + 1):
+             r.append((i * sc, f't_{i * sc}'))
 
         for a in r:
             if a[0] == 0:
                 r.remove(a)
         r.sort()
+    else:
+        raise Exception("No r-configuration (few/many) specified")
 
     for v in range(0, len(r)):
         r[v] = int(r[v][0]), r[v][1]
