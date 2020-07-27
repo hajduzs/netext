@@ -2,7 +2,7 @@ import os
 import algorithms.Solver as S
 from Utilities.Plotting import replot
 
-o_dir = "/home/zsombor/Desktop/latest_0620_test/output"
+o_dir = "/home/zsombor/Desktop/0721/output"
 
 graphs = []
 for (dp, dn, fns) in os.walk(o_dir):

@@ -20,6 +20,7 @@ def run(TOPOLOGY, GAMMA, FILES, R, r_comment, g):
 
     Info.get_instance().radius = R
     Info.get_instance().r_info = r_comment
+    Info.get_instance().r_in_km = int(r_comment.text.split('_')[-1])
     Info.get_instance().gamma = GAMMA
     Info.get_instance().success = False
     Info.get_instance().error = False
