@@ -280,6 +280,8 @@ def get_r_values(topology, r_config):
             (80 * sf, 'rw_80'),
             (100 * sf, 'rw_100')
         ]
+    elif r_config == '5km':
+        r = [(5 * sf * i, f'rw_{5 * i}') for i in range(1, 21)]
     elif r_config == 'many' or r_config == 'medium':
         r = []
         if r_config == 'many':

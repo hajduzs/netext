@@ -25,7 +25,7 @@ def dir_path(path):
 parser = argparse.ArgumentParser(description='NetExt main entry point')
 parser.add_argument('dir', metavar='D', type=dir_path, nargs=1,
                     help='One directory where input files can be found')
-parser.add_argument('-rc', metavar='R', type=str, choices=['few', 'medium', 'many'],
+parser.add_argument('-rc', metavar='R', type=str, choices=['few', '5km' 'medium', 'many'],
                     help='how many different radii to test the graphs. ')
 parser.add_argument('-d', action='store_true', help='Debug mode.')
 args = parser.parse_args()

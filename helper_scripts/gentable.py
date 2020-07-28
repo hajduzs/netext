@@ -1,17 +1,54 @@
 import xml.etree.ElementTree as ET
 
+
 def cut(num):
     data = num.split(".")
     if len(data) == 2:
+        if len(data[0]) > 1:
+            return data[0]
+        if data[0] == data[1] == '0':
+            return str(0)
         return data[0] + "." + data[1][:2]
     return num
 
 
 def fit(tag, attr):
     try:
-        return cut(tag.find(attr).text)
+        return tag.find(attr).text
     except Exception as e:
-        return "-"
+        print(attr, tag)
+        return "X"
+
+def perc(num):
+    print(num)
+    return cut(str(float(num) * 100))
+
+def getspec(RECORD, res):
+    RECORD.append(perc(fit(res, 'new_edges_ratio_to_total')))
+    RECORD.append(fit(res, 'new_edges_count'))
+    RECORD.append(cut(fit(res, 'runtime')))
+
+
+def sub(r, RECORD):
+    lpf_f = False
+    hcf_f = False
+    lrr = []
+    hrr = []
+    for res in r:
+        if fit(res, 'algorithm') == 'lp_full':
+            lpf_f = True
+            getspec(lrr, res)
+        if fit(res, 'algorithm') == 'h_cost_first':
+            hcf_f = True
+            getspec(hrr, res)
+    if not lpf_f:
+        RECORD.extend(['-'] * 3)
+    else:
+        RECORD.extend(lrr)
+    if not hcf_f:
+        RECORD.extend(['-'] * 3)
+    else:
+        RECORD.extend(hrr)
 
 
 filename = "0721"
@@ -21,24 +58,14 @@ with open(infile) as file:
     data = file.read()
     root = ET.fromstring(data, parser=ET.XMLParser(encoding='utf-8'))
 
-TABLE = [['name',
-         'V',
-         'E',
-         'edge total len',
-         's lp cost',
-         's lp runtime',
-         's h cost',
-         's h runtime',
-         'm lp cost',
-         'm lp runtime',
-         'm h cost',
-         'm h runtime']]
+TABLE = [['% HEADER']]
 
 for topology in root:
     # graph
     graph = topology[0]
     xd = graph.find('name').text
     xd = xd.replace('_', '-')
+    print(f' --- --- {xd}')
     hehe = float(graph.find('total_edge_length').text) / float(graph.find('scale_factor').text)
     RECORD = [xd,
               graph.find('num_vertices').text,
@@ -46,49 +73,36 @@ for topology in root:
               cut(str(hehe))]
 
     # runs
-    small_found = False
-    med_found = False
+    small_found = False; srr = []
+    med_found = False; mrr = []
+    big_found = False; brr = []
     for run in topology[1]:
         if fit(run, 'r_info') == 'rw_10':
             small_found = True
-            lpf_found = False
-            hcf_found = False
-            for result in run:
-                if fit(result, 'algorithm') == 'lp_full':
-                    lpf_found = True
-                    RECORD.append(fit(result, 'new_edges_in_km'))
-                    RECORD.append(fit(result, 'runtime'))
-                if fit(result, 'algorithm') == 'h_cost_first':
-                    hcf_found = True
-                    RECORD.append(fit(result, 'new_edges_in_km'))
-                    RECORD.append(fit(result, 'runtime'))
-            if not lpf_found:
-                RECORD.extend(['NA'] * 2)
-            if not hcf_found:
-                RECORD.extend(['NA'] * 2)
-        if fit(run, 'r_info') == 'rw_80':
+            sub(run, srr)
+        if fit(run, 'r_info') == 'rw_40':
             med_found = True
-            lpf_found = False
-            hcf_found = False
-            for result in run:
-                if fit(result, 'algorithm') == 'lp_full':
-                    lpf_found = True
-                    RECORD.append(fit(result, 'new_edges_in_km'))
-                    RECORD.append(fit(result, 'runtime'))
-                if fit(result, 'algorithm') == 'h_cost_first':
-                    hcf_found = True
-                    RECORD.append(fit(result, 'new_edges_in_km'))
-                    RECORD.append(fit(result, 'runtime'))
-            if not lpf_found:
-                RECORD.extend(['NA'] * 2)
-            if not hcf_found:
-                RECORD.extend(['NA'] * 2)
+            sub(run, mrr)
+        if fit(run, 'r_info') == 'rw_80':
+            big_found = True
+            sub(run, brr)
+
         continue
 
     if not small_found:
-        RECORD.extend(['NA']*4)
+        RECORD.extend(['--'] * 6)
+    else:
+        RECORD.extend(srr)
+
     if not med_found:
-        RECORD.extend(['NA']*4)
+        RECORD.extend(['--'] * 6)
+    else:
+        RECORD.extend(mrr)
+
+    if not big_found:
+        RECORD.extend(['--'] * 6)
+    else:
+        RECORD.extend(brr)
 
     TABLE.append(RECORD)
 
