@@ -7,10 +7,10 @@ def get_element_from_file(xml_file):
         return ET.fromstring(data, parser=ET.XMLParser(encoding='utf-8'))
 
 
-o_dir = "/home/zsombor/Desktop/justindia/"
-#o_dir = "/home/zsombor/work/netext/output"
+o_dir = "/home/zsombor/Desktop/netext_mindenkori/output/"
+o_dir = "/home/zsombor/work/netext/output"
 
-filename = "indi"
+filename = "oldlp"
 outfile = f'../xml_process/{filename}.xml'
 
 # get graph names

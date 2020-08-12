@@ -20,7 +20,7 @@ def run(TOPOLOGY, GAMMA, FILES, R, r_comment, g):
 
     Info.get_instance().radius = R
     Info.get_instance().r_info = r_comment
-    Info.get_instance().r_in_km = int(r_comment.text.split('_')[-1])
+    Info.get_instance().r_in_km = int(r_comment.split('_')[-1])
     Info.get_instance().gamma = GAMMA
     Info.get_instance().success = False
     Info.get_instance().error = False
@@ -94,18 +94,19 @@ def run(TOPOLOGY, GAMMA, FILES, R, r_comment, g):
     pl.lb_model = None
 
     if full:
-        solvers = [S.Solver(S.LP_FULL, pl)]
+        solvers = [S.Solver(S.LP_ORIGINAL, pl)] #, S.Solver(S.LP_FULL, pl)]
     else:
         solvers = []
 
+    '''
     solvers.extend([
-        # S.Solver(S.LP_ITERATIVE, pl),
+        S.Solver(S.LP_ITERATIVE, pl),
         S.Solver(S.LP_TOP_LEVEL, pl),
         S.Solver(S.H_NEIGH_FIRST, pl),
         S.Solver(S.H_COST_FIRST, pl),
         S.Solver(S.H_AVG_COST_FIRST, pl)
     ])
-
+    '''
     Info.get_instance().results = []
 
     for s in solvers:
@@ -122,9 +123,9 @@ def run(TOPOLOGY, GAMMA, FILES, R, r_comment, g):
         try:
             pl.lb_model.write(f'{FILES["g_r_path_data"]}/lp_full_model.lp')
         except:
-            logging.warning("LB model cound not be written to file")
+            logging.warning("LB model could not be written to file")
 
-    # plot(FILES)
+    #plot(FILES)
 
     if not Info.get_instance().results:
         Info.get_instance().__delattr__('results')

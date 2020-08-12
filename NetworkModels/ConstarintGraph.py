@@ -1,6 +1,7 @@
 import logging
 import mip
 import networkx as nx
+import matplotlib.pyplot as plt
 
 
 class ConstraintGraph:
@@ -10,6 +11,7 @@ class ConstraintGraph:
 
         for constraint in c:
             if constraint.slack < 0.001:
+                print(constraint)
                 zones = [int(x.name[4:-1]) for x in constraint.expr.expr]
                 name = constraint.name
                 cost = -constraint.expr.const
@@ -30,6 +32,13 @@ class ConstraintGraph:
         logging.debug("RHS nodes:")
         logging.debug(f'{[n for n, d in self.G.nodes(data=True) if d["bipartite"] == 1]}')
         logging.debug(f'{self.G.edges}')
+
+        X, Y = nx.bipartite.sets(self.G)
+        pos = dict()
+        pos.update((n, (2, i)) for i, n in enumerate(X))  # put nodes from X at x=1
+        pos.update((n, (1, i)) for i, n in enumerate(Y))  # put nodes from Y at x=2
+        nx.draw(self.G, pos=pos, with_labels=True)
+        plt.show()
 
     def LHS(self):
         return [(n, d) for n, d in self.G.nodes(data=True) if d["bipartite"] == 0]
@@ -53,6 +62,7 @@ class ConstraintGraph:
         m.objective = mip.minimize(mip.xsum([c * w for c, w in C.values()]))
 
         s = m.optimize()
+        m.write("xdd.lp")
 
         chosen = []
         for n, v in C.items():

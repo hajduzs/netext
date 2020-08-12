@@ -23,7 +23,10 @@ def perc(num):
     print(num)
     return cut(str(float(num) * 100))
 
-def getspec(RECORD, res):
+def getspec(RECORD, res, lp=False):
+    if lp:
+        RECORD.append(fit(res, 'constrs_used'))
+    RECORD.append(cut(fit(res, 'new_edges_diff_percentage')))
     RECORD.append(perc(fit(res, 'new_edges_ratio_to_total')))
     RECORD.append(fit(res, 'new_edges_count'))
     RECORD.append(cut(fit(res, 'runtime')))
@@ -34,31 +37,33 @@ def sub(r, RECORD):
     hcf_f = False
     lrr = []
     hrr = []
+    RECORD.append(fit(r, 'num_zones_remaining'))
+    RECORD.append(fit(r, 'num_cuts'))
     for res in r:
         if fit(res, 'algorithm') == 'lp_full':
             lpf_f = True
-            getspec(lrr, res)
+            getspec(lrr, res, lp=True)
         if fit(res, 'algorithm') == 'h_cost_first':
             hcf_f = True
             getspec(hrr, res)
     if not lpf_f:
-        RECORD.extend(['-'] * 3)
+        RECORD.extend(['-'] * 5)
     else:
         RECORD.extend(lrr)
     if not hcf_f:
-        RECORD.extend(['-'] * 3)
+        RECORD.extend(['-'] * 4)
     else:
         RECORD.extend(hrr)
 
 
-filename = "0721"
+filename = "encore"
 infile = f'../xml_process/{filename}.xml'
 
 with open(infile) as file:
     data = file.read()
     root = ET.fromstring(data, parser=ET.XMLParser(encoding='utf-8'))
 
-TABLE = [['% HEADER']]
+TABLE = []
 
 for topology in root:
     # graph
@@ -73,13 +78,9 @@ for topology in root:
               cut(str(hehe))]
 
     # runs
-    small_found = False; srr = []
     med_found = False; mrr = []
     big_found = False; brr = []
     for run in topology[1]:
-        if fit(run, 'r_info') == 'rw_10':
-            small_found = True
-            sub(run, srr)
         if fit(run, 'r_info') == 'rw_40':
             med_found = True
             sub(run, mrr)
@@ -89,18 +90,13 @@ for topology in root:
 
         continue
 
-    if not small_found:
-        RECORD.extend(['--'] * 6)
-    else:
-        RECORD.extend(srr)
-
     if not med_found:
-        RECORD.extend(['--'] * 6)
+        RECORD.extend(['--'] * 11)
     else:
         RECORD.extend(mrr)
 
     if not big_found:
-        RECORD.extend(['--'] * 6)
+        RECORD.extend(['--'] * 11)
     else:
         RECORD.extend(brr)
 
@@ -116,6 +112,7 @@ def sep(record):
     ret += ' \\\\\n'
     return ret
 
+TABLE.sort(key = lambda x: (int(x[1]), int(x[2])))
 
 with open(f'../xml_process/{filename}.tex', 'w') as f:
     f.write('\\begin{center}\n')

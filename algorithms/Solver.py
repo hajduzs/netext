@@ -6,6 +6,7 @@ import logging
 # Define constants for algorithm assigment
 LP_FULL = 'lp_full'
 LP_TOP_LEVEL = 'lp_top_level'
+LP_ORIGINAL = 'lp_orig'
 LP_ITERATIVE = 'lp_iterative'
 H_COST_FIRST = 'h_cost_first'
 H_NEIGH_FIRST = 'h_neigh_first'
@@ -15,6 +16,7 @@ H_AVG_COST_FIRST = 'h_avg_cost_first'
 _METHODS = {
     LP_FULL: alg.lp_full,
     LP_TOP_LEVEL: alg.lp_top_lvl,
+    LP_ORIGINAL: alg.lp_first,
     LP_ITERATIVE: alg.lp_iter,
     H_COST_FIRST: alg.h_cost,
     H_NEIGH_FIRST: alg.h_neigh,
@@ -41,8 +43,7 @@ class Solver:
         edges, t, c = self._alg(self._pipe)
         self._solution = edges
         self._time = t
-        if c is not None:
-            self._total_constr = c
+        self._total_constr = c
 
     def solution(self):
         if self._solution is None:

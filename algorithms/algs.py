@@ -1,6 +1,7 @@
 from algorithms.Pipeline import Pipeline
 from algorithms.lb_calc import dual_lp_lb_calc
 from algorithms.heuristic_calc import heuristic_calc
+from algorithms.firstlp import full_lp_calc
 from NetworkModels.ConstarintGraph import ConstraintGraph
 from Utilities.Timeit import Timeit
 
@@ -13,6 +14,13 @@ def lp_full(p: Pipeline):
     t = Timeit.time('lp_full')
     p.lb_model = m
     return edges, t, len(m.constrs)
+
+
+def lp_first(p: Pipeline):
+    Timeit.init()
+    edges = full_lp_calc(p)
+    t = Timeit.time('lp_original')
+    return edges, t, None
 
 
 def lp_top_lvl(p: Pipeline):
