@@ -21,21 +21,21 @@ The main components and the structure of the repo are listed here:
 
 `/src`         -- Most of the implementation (python), excluding path planning and partitioning, see "Other packages and tools" section
 
-`/data`       -- Input graphs.
+`/data`       -- Example input graphs.
 
-`/res`      -- Simulation results in raw format
 
 ## How to use
 
 - In order to run the scripts, install the required python packages with 
 `pip install -r requirements.txt`
+
+- Install `libcgal-dev` and `libglwf3-dev` (c++ dependencies)
   
 - Add graphs to the `/data` folder. Supported formats: `.gml`, `.lgf` or `.graphml`
 
-- run `python3`, then `from src.run import run` and call the `run` function with the input graph, disaster radius and desired methods (dor the metohds, see `src.solver.methods`) Example: `run('data/test.lgf', 50, ['lp_full', 'h_cost_first'])` 
+- run `python3`, then `from src.run import run` and call the `run` function with the input graph, disaster radius and desired methods (for the metohds, see `src.solver.methods`) Example: `run('data/test.lgf', 50, ['lp_full', 'h_cost_first'])` 
 
-NOTE: If the library or the executable is not working, compile the c++ components locally as well. (See intructions in the respective repos listed in the "Other packages and tools" section).
-
+NOTE: If the library or the executable is not working, compile the c++ components locally as well. See intructions in the respective repos listed in the section below ("Other packages and tools").
 
 ## Other packages and tools
 
