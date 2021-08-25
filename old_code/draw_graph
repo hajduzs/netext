@@ -1,7 +1,0 @@
-
-import matplotlib.pyplot as plt
-import networkx as nx
-print(TOPOLOGY.name)
-nx.draw_networkx(TOPOLOGY, {n:d['coords'] for n, d in TOPOLOGY.nodes(data=True)}, with_labels=True)
-plt.show()
-continue

@@ -1,9 +1,0 @@
-@nodes
-labels	coords
-1	(100, 100)
-2	(300, 120)
-3	(300, 300)
-@edges
-		label
-1	2	1
-2	3	2
